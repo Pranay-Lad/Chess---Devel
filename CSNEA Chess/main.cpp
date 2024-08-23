@@ -23,6 +23,8 @@ int main()
     const int squareSize = 100;
     const int boardSize = squareSize * 8;
     const int xOffset = window.getSize().x - boardSize; // Offset for positioning board in the window
+
+    int PieceName;
     
 
     // Run as long as window is open

@@ -72,3 +72,36 @@ bool Core::Board::isOccupiedFriendly(int row, int col, int Colour) {
     }
     return false; // Target square is Friendly
 }
+
+void Core::Board::MakeMove(Move move) {
+    Square[move.TargetSquare] = Square[move.StartSquare]; // Move Piece from start square to target square
+    Square[move.StartSquare] = NULL; // Set the start square to 0
+}
+
+// Check If the Path of a Piece is Blocked by Another Piece
+bool Core::Board::isBlocked(int startSquare, int endSquare) {
+    // Determine direction of movement
+    int dx = (endSquare % 8) - (startSquare % 8); // Column difference
+    int dy = (endSquare / 8) - (startSquare / 8); // Row difference
+
+    // Normalize direction vectors
+    int stepX = (dx == 0) ? 0 : (dx > 0 ? 1 : -1);
+    int stepY = (dy == 0) ? 0 : (dy > 0 ? 1 : -1);
+
+    // Move in the direction and check for blocks
+    int currentSquare = startSquare + stepX + stepY * 8; // Initial step
+    while (currentSquare != endSquare) {
+        if (currentSquare < 0 || currentSquare >= 64) {
+            // Out of bounds
+            return true;
+        }
+        if (Square[currentSquare] != 0) {
+            // There is a piece blocking the path
+            return true;
+        }
+        currentSquare += stepX + stepY * 8;
+    }
+
+    // No pieces blocking the path
+    return false;
+}

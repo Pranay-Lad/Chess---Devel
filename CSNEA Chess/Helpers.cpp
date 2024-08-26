@@ -49,6 +49,7 @@ sf::Vector2f Core::getCenteredPosition(sf::Vector2f squarePosition, const sf::Sp
     return sf::Vector2f(centeredX, centeredY);
 }
 
+// Set Properties For Pawn Sprites
 void Core::SetupPawns(std::vector<sf::Sprite>& Pawns, sf::Texture& Texture, int xOffset, int squareSize, int Rank) {
     // Loop Across all 8 columns
     for (int col = 0; col < 8; ++col) {
@@ -58,7 +59,7 @@ void Core::SetupPawns(std::vector<sf::Sprite>& Pawns, sf::Texture& Texture, int 
         Pawns[col].setPosition(Core::getCenteredPosition(snappedPosition, Pawns[col], squareSize)); // Adjust position of the piece to the centre of the square
     }
 }
-
+// Set Properties For King and Queen
 void Core::SetupPieces(std::vector<sf::Sprite>& Pieces, sf::Texture& Texture, int xOffset, int squareSize, int Rank, int Pos)
 {
     Pieces[0].setScale(0.7f, 0.7f);
@@ -67,6 +68,7 @@ void Core::SetupPieces(std::vector<sf::Sprite>& Pieces, sf::Texture& Texture, in
     Pieces[0].setPosition(Core::getCenteredPosition(snappedPosition, Pieces[0], squareSize));
 }
 
+// Set Properties For Rook, Bishop and Knight
 void Core::SetupPieces(std::vector<sf::Sprite>& Pieces, sf::Texture& Texture, int xOffset, int squareSize, int Rank, int Pos_1, int Pos_2)
 {
     Pieces[0].setScale(0.7f, 0.7f);
@@ -77,4 +79,16 @@ void Core::SetupPieces(std::vector<sf::Sprite>& Pieces, sf::Texture& Texture, in
     Pieces[1].setTexture(Texture);
     snappedPosition = Core::getSnappedPosition(Rank, Pos_2, squareSize, xOffset);
     Pieces[1].setPosition(Core::getCenteredPosition(snappedPosition, Pieces[1], squareSize));
+}
+
+// Returns the Square Index of a Sprite Piece
+int Core::getIndex(sf::Vector2f position, int squareSize, int xOffset) {
+    int col = static_cast<int>((position.x - xOffset) / squareSize);
+    int row = 7 - static_cast<int>(position.y / squareSize); // Convert position vector to column and rows
+    return ((row * 8) + col); // Return index
+}
+
+// Retuns the Square Index of a Piece
+int Core::toIndex(int row, int col) {
+    return (7 - row) * 8 + col;
 }

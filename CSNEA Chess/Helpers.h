@@ -17,4 +17,7 @@ namespace Core {
 	void SetupPawns(std::vector<sf::Sprite>& Pawns, sf::Texture& Texture, int xOffset, int squareSize, int rank);
 	void SetupPieces(std::vector<sf::Sprite>& Pieces, sf::Texture& Texture, int xOffset, int squareSize, int Rank, int Pos);
 	void SetupPieces(std::vector<sf::Sprite>& Pieces, sf::Texture& Texture, int xOffset, int squareSize, int Rank, int Pos_1, int Pos_2);
+
+	int getIndex(sf::Vector2f position, int squareSize, int xOffset);
+	int toIndex(int row, int col);
 }

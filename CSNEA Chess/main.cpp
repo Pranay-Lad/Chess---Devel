@@ -204,16 +204,18 @@ int main()
                     int startCol = static_cast<int>((originalPosition.x - xOffset) / squareSize);
                     int startRow = static_cast<int>(originalPosition.y / squareSize);
 
+                    // Initialise boolean validation variables
                     bool isOccupied = false;
                     bool valid = false;
-                    bool isMoveValid = false; // Initialise boolean validation variable
+                    bool isMoveValid = false; 
+                    bool blocked = true;
 
                     // Check Turn
                     if (isWhiteTurn) {
                         if (draggedPiece->getTexture() == &t1) { // If the dragged piece has the pawn texture (t1) treat as pawn
                             valid = Piece::isPawnMoveValid(startRow, startCol, endRow, endCol, true); // Validate Pawn Move
-                            isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::White);
-                            isMoveValid = valid && isOccupied;
+                            isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::White); // Check if square is Occupied by a Friendly Piece
+                            isMoveValid = valid && isOccupied; // Check all conditions are valid
                         }
                         else if (draggedPiece->getTexture() == &t2) {
                             valid = Piece::isKnightMoveValid(startRow, startCol, endRow, endCol);
@@ -223,18 +225,21 @@ int main()
                         else if (draggedPiece->getTexture() == &t3) {
                             valid = Piece::isBishopMoveValid(startRow, startCol, endRow, endCol);
                             isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::White);
-                            isMoveValid = valid && isOccupied;
+                            blocked = Board.isBlocked(Core::toIndex(startRow, startCol), Core::toIndex(endRow, endCol)); // Check if path is blocked
+                            isMoveValid = valid && isOccupied && !blocked;
                         }
                         else if (draggedPiece->getTexture() == &t4) {
                             valid = Piece::isRookMoveValid(startRow, startCol, endRow, endCol);
                             isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::White);
-                            isMoveValid = valid && isOccupied;
+                            blocked = Board.isBlocked(Core::toIndex(startRow, startCol), Core::toIndex(endRow, endCol));
+                            isMoveValid = valid && isOccupied && !blocked;
 
                         }
                         else if (draggedPiece->getTexture() == &t5) {
                             valid = Piece::isQueenMoveValid(startRow, startCol, endRow, endCol);
                             isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::White);
-                            isMoveValid = valid && isOccupied;
+                            blocked = Board.isBlocked(Core::toIndex(startRow, startCol), Core::toIndex(endRow, endCol));
+                            isMoveValid = valid && isOccupied && !blocked;
                         }
                         else if (draggedPiece->getTexture() == &t6) {
                             valid = Piece::isKingMoveValid(startRow, startCol, endRow, endCol);
@@ -256,18 +261,21 @@ int main()
                         else if (draggedPiece->getTexture() == &t9) {
                             valid = Piece::isBishopMoveValid(startRow, startCol, endRow, endCol);
                             isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::Black);
-                            isMoveValid = valid && isOccupied;
+                            blocked = Board.isBlocked(Core::toIndex(startRow, startCol), Core::toIndex(endRow, endCol));
+                            isMoveValid = valid && isOccupied && !blocked;
                         }
                         else if (draggedPiece->getTexture() == &t10) {
                             valid = Piece::isRookMoveValid(startRow, startCol, endRow, endCol);
                             isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::Black);
-                            isMoveValid = valid && isOccupied;
+                            blocked = Board.isBlocked(Core::toIndex(startRow, startCol), Core::toIndex(endRow, endCol));
+                            isMoveValid = valid && isOccupied && !blocked;
 
                         }
                         else if (draggedPiece->getTexture() == &t11) {
                             valid = Piece::isQueenMoveValid(startRow, startCol, endRow, endCol);
                             isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::Black);
-                            isMoveValid = valid && isOccupied;
+                            blocked = Board.isBlocked(Core::toIndex(startRow, startCol), Core::toIndex(endRow, endCol));
+                            isMoveValid = valid && isOccupied && !blocked;
                         }
                         else if (draggedPiece->getTexture() == &t12) {
                             valid = Piece::isKingMoveValid(startRow, startCol, endRow, endCol);
@@ -279,11 +287,14 @@ int main()
                     if (isMoveValid && Piece::isPositionValid(endRow, endCol)) {
                         sf::Vector2f snappedPosition = Core::getSnappedPosition(endRow, endCol, squareSize, xOffset); // Calculate the Nearest Row and Column
                         draggedPiece->setPosition(Core::getCenteredPosition(snappedPosition, *draggedPiece, squareSize)); // on the Grid Compared to the Mouse Position 
+                        Board.MakeMove(Move(Core::getIndex(originalPosition, squareSize, xOffset), Core::getIndex(snappedPosition, squareSize, xOffset)));
                         isWhiteTurn = !isWhiteTurn; // Flip turn
+                        std::cout << std::endl;
+                        Board.PrintBoard(); // Print Current Board Position
                     }
                     else {
                         draggedPiece->setPosition(originalPosition); // Snap back to original position
-                    } // Set the Position of the piece to the nearest square
+                    } 
                     draggedPiece = nullptr;  // Stop dragging
                 }
             }

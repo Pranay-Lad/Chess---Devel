@@ -1,5 +1,10 @@
 #include <SFML/Graphics.hpp>
+#include <vector>
+#include <string>
+
 #include "Helpers.h"
+#include "Piece.h"
+#include "Board.h"
 
 int main()
 {
@@ -33,7 +38,7 @@ int main()
     std::vector<sf::Sprite> BlackKnights(2);
     std::vector<sf::Sprite> BlackBishops(2);
     std::vector<sf::Sprite> BlackRooks(2);
-    std::vector<sf::Sprite> BlackQueens(8);
+    std::vector<sf::Sprite> BlackQueens(1);
     std::vector<sf::Sprite> BlackKings(1);
 
     // Set the size of each square
@@ -46,6 +51,11 @@ int main()
     sf::Sprite* draggedPiece = nullptr;
     sf::Vector2f offset;
     sf::Vector2f originalPosition;
+    bool isWhiteTurn = true;
+
+    Core::Board Board;
+    Board.InitialiseBoard();
+    Board.PrintBoard();
   
 
     // Initialise Piece Sprite Values
@@ -185,13 +195,91 @@ int main()
             if (event.type == sf::Event::MouseButtonReleased) {
                 if (event.mouseButton.button == sf::Mouse::Left && draggedPiece) {
                     // Snap the piece to the nearest square and center it
-
                     sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
-                    int col = static_cast<int>((mousePos.x - xOffset) / squareSize); 
-                    int row = static_cast<int>(mousePos.y / squareSize);               
-                    if (col >= 0 && col < 8 && row >= 0 && row < 8) {
-                        sf::Vector2f snappedPosition = Core::getSnappedPosition(row, col, squareSize, xOffset); // Calculate the Nearest Row and Column
+                    // Calculate End Column and Row
+                    int endCol = static_cast<int>((mousePos.x - xOffset) / squareSize);
+                    int endRow = static_cast<int>(mousePos.y / squareSize);
+
+                    // Calculate Start Column and Row
+                    int startCol = static_cast<int>((originalPosition.x - xOffset) / squareSize);
+                    int startRow = static_cast<int>(originalPosition.y / squareSize);
+
+                    bool isOccupied = false;
+                    bool valid = false;
+                    bool isMoveValid = false; // Initialise boolean validation variable
+
+                    // Check Turn
+                    if (isWhiteTurn) {
+                        if (draggedPiece->getTexture() == &t1) { // If the dragged piece has the pawn texture (t1) treat as pawn
+                            valid = Piece::isPawnMoveValid(startRow, startCol, endRow, endCol, true); // Validate Pawn Move
+                            isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::White);
+                            isMoveValid = valid && isOccupied;
+                        }
+                        else if (draggedPiece->getTexture() == &t2) {
+                            valid = Piece::isKnightMoveValid(startRow, startCol, endRow, endCol);
+                            isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::White);
+                            isMoveValid = valid && isOccupied;
+                        }
+                        else if (draggedPiece->getTexture() == &t3) {
+                            valid = Piece::isBishopMoveValid(startRow, startCol, endRow, endCol);
+                            isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::White);
+                            isMoveValid = valid && isOccupied;
+                        }
+                        else if (draggedPiece->getTexture() == &t4) {
+                            valid = Piece::isRookMoveValid(startRow, startCol, endRow, endCol);
+                            isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::White);
+                            isMoveValid = valid && isOccupied;
+
+                        }
+                        else if (draggedPiece->getTexture() == &t5) {
+                            valid = Piece::isQueenMoveValid(startRow, startCol, endRow, endCol);
+                            isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::White);
+                            isMoveValid = valid && isOccupied;
+                        }
+                        else if (draggedPiece->getTexture() == &t6) {
+                            valid = Piece::isKingMoveValid(startRow, startCol, endRow, endCol);
+                            isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::White);
+                            isMoveValid = valid && isOccupied;
+                        }
+                    }
+                    else {
+                        if (draggedPiece->getTexture() == &t7) { // If the dragged piece has the black pawn texture (t8) treat as black pawn
+                            valid = Piece::isPawnMoveValid(startRow, startCol, endRow, endCol, false);
+                            isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::Black);
+                            isMoveValid = valid && isOccupied;
+                        }
+                        else if (draggedPiece->getTexture() == &t8) {
+                            valid = Piece::isKnightMoveValid(startRow, startCol, endRow, endCol);
+                            isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::Black);
+                            isMoveValid = valid && isOccupied;
+                        }
+                        else if (draggedPiece->getTexture() == &t9) {
+                            valid = Piece::isBishopMoveValid(startRow, startCol, endRow, endCol);
+                            isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::Black);
+                            isMoveValid = valid && isOccupied;
+                        }
+                        else if (draggedPiece->getTexture() == &t10) {
+                            valid = Piece::isRookMoveValid(startRow, startCol, endRow, endCol);
+                            isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::Black);
+                            isMoveValid = valid && isOccupied;
+
+                        }
+                        else if (draggedPiece->getTexture() == &t11) {
+                            valid = Piece::isQueenMoveValid(startRow, startCol, endRow, endCol);
+                            isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::Black);
+                            isMoveValid = valid && isOccupied;
+                        }
+                        else if (draggedPiece->getTexture() == &t12) {
+                            valid = Piece::isKingMoveValid(startRow, startCol, endRow, endCol);
+                            isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::Black);
+                            isMoveValid = valid && isOccupied;
+                        }
+                    }
+
+                    if (isMoveValid && Piece::isPositionValid(endRow, endCol)) {
+                        sf::Vector2f snappedPosition = Core::getSnappedPosition(endRow, endCol, squareSize, xOffset); // Calculate the Nearest Row and Column
                         draggedPiece->setPosition(Core::getCenteredPosition(snappedPosition, *draggedPiece, squareSize)); // on the Grid Compared to the Mouse Position 
+                        isWhiteTurn = !isWhiteTurn; // Flip turn
                     }
                     else {
                         draggedPiece->setPosition(originalPosition); // Snap back to original position
@@ -234,24 +322,52 @@ int main()
 
 
         // Draw the Pieces onto the window
-        for (int i = 0; i < 8; ++i) {
-            window.draw(WhitePawns[i]);
-            window.draw(BlackPawns[i]);
+        for (auto& pawn : WhitePawns) {
+            window.draw(pawn);
         }
 
-        for (int i = 0; i < 2; ++i) {
-            window.draw(WhiteKnights[i]);
-            window.draw(WhiteRooks[i]);
-            window.draw(WhiteBishops[i]);
-            window.draw(BlackKnights[i]);
-            window.draw(BlackBishops[i]);
-            window.draw(BlackRooks[i]);
+        for (auto& knight : WhiteKnights) {
+            window.draw(knight);
         }
 
-        window.draw(WhiteQueens[0]);
-        window.draw(WhiteKings[0]);
-        window.draw(BlackQueens[0]);
-        window.draw(BlackKings[0]);
+        for (auto& bishop : WhiteBishops) {
+            window.draw(bishop);
+        }
+
+        for (auto& rook : WhiteRooks) {
+            window.draw(rook);
+        }
+        if (WhiteQueens.size()) {
+            window.draw(WhiteQueens[0]);
+        }
+
+        if (WhiteKings.size()) {
+            window.draw(WhiteKings[0]);
+        }
+
+        for (auto& pawn : BlackPawns) {
+            window.draw(pawn);
+        }
+
+        for (auto& knight : BlackKnights) {
+            window.draw(knight);
+        }
+
+        for (auto& bishop : BlackBishops) {
+            window.draw(bishop);
+        }
+
+        for (auto& rook : BlackRooks) {
+            window.draw(rook);
+        }
+
+        if (BlackQueens.size()) {
+            window.draw(BlackQueens[0]);
+        }
+
+        if (BlackKings.size()) {
+            window.draw(BlackKings[0]);
+        }
 
 
         window.display();

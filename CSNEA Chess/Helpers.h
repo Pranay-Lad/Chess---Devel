@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 
+
 namespace Core {
 	void printSquareLabel(sf::Vector2f position, int squareSize, int xOffset, int PieceName);
 

@@ -1,5 +1,6 @@
 #include "Piece.h"
 
+
 bool Piece::isPositionValid(int row, int col) {
 	return row >= 0 && row < 8 && col >= 0 && col < 8; // Check that Position is in grid
 }
@@ -52,7 +53,7 @@ bool Piece::isKnightMoveValid(int startRow, int startCol, int endRow, int endCol
     return (rowDiff == 2 && colDiff == 1) || (rowDiff == 1 && colDiff == 2);  // "L" shape movement
 }
 
-bool Piece::isPawnMoveValid(int startRow, int startCol, int endRow, int endCol, bool isWhite) {
+bool Piece::isPawnMoveValid(int startRow, int startCol, int endRow, int endCol, bool isWhite, int Square[64]) {
     if (startRow == endRow && startCol == endCol) {
         return false;
     }
@@ -71,6 +72,41 @@ bool Piece::isPawnMoveValid(int startRow, int startCol, int endRow, int endCol, 
         return true;
     }
 
+    int index = Core::toIndex(endRow, endCol) - Core::toIndex(startRow, startCol); // Calculate offset between start square and target square
+    bool isCapture = Piece::isOccupiedHostile(endRow, endCol, colour, Square); // Check if square has an enemy piece
+    if (index == (direction * -7) || index == (direction * -9)) { // If the offsets match pawn offsets
+        if (!isCapture) { 
+            return true; // allow capture
+        }
+    }
     // Invalid move
     return false;
+}
+
+// Return the Sprite at a Grid Position
+sf::Sprite Piece::returnAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset) {
+    int targetIndex = Core::toIndex(endRow, endCol); // Calculate index
+    for (int i = 0; i < Pieces.size(); i++) { // Iterate for size of the vector
+        int index = Core::getIndex(Pieces[i].getPosition(), squareSize, xOffset);
+        if (index == targetIndex) { // If Target index = Sprite Index
+            return Pieces[i]; // Return the Sprite
+        }
+    }
+}
+
+bool Piece::isOccupiedHostile(int row, int col, int Colour, int Square[64]) {
+    int index = ((7 - row) * 8) + col;
+    if (Square[index] == 0) {
+        return true;
+    }
+    if (Colour == 8) {
+        if (Square[index] < 8) {
+            return false;
+        }
+        return true;
+    }
+    if (Square[index] > 8) {
+        return false;
+    }
+    return true;
 }

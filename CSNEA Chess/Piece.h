@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "Helpers.h"
+#include "Board.h"
 
 
 namespace Piece {
@@ -25,5 +26,9 @@ namespace Piece {
     bool isQueenMoveValid(int startRow, int startCol, int endRow, int endCol);
     bool isKingMoveValid(int startRow, int startCol, int endRow, int endCol);
     bool isKnightMoveValid(int startRow, int startCol, int endRow, int endCol);
-    bool isPawnMoveValid(int startRow, int startCol, int endRow, int endCol, bool isWhite);
+    bool isPawnMoveValid(int startRow, int startCol, int endRow, int endCol, bool isWhite, int Square[64]);
+
+    bool isOccupiedHostile(int row, int col, int Colour, int Square[64]);
+
+    sf::Sprite returnAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset);
 }

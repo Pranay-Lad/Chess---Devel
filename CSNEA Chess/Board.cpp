@@ -105,3 +105,93 @@ bool Core::Board::isBlocked(int startSquare, int endSquare) {
     // No pieces blocking the path
     return false;
 }
+
+
+
+// Remove Sprite At Grid Position
+void Core::Board::removeAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset) {
+    int targetindex = Core::toIndex(endRow, endCol); // Calculate Index of Target Square
+    for (int i = 0; i < Pieces.size(); i++) { // Iterate for the size of the Piece vector
+        int index = Core::getIndex(Pieces[i].getPosition(), squareSize, xOffset); // Calculate index of sprite
+        if (index == targetindex) { // If Position are the same
+            Pieces.erase(Pieces.begin() + i); // Remove Sprite from vector
+        }
+
+    }
+}
+
+bool Core::Board::isKingInCheck(std::vector<sf::Sprite> King, bool isWhite, int squareSize, int xOffset) {
+    int kingIndex = Core::getIndex(King[0].getPosition(), squareSize, xOffset);
+    std::cout << "KING INDEX" << kingIndex << std::endl;
+    // Piece values for the opponent based on the color of the king
+    int opponentPawn = isWhite ? 9 : 1;
+    int opponentKnight = isWhite ? 10 : 2;
+    int opponentBishop = isWhite ? 11 : 3;
+    int opponentRook = isWhite ? 12 : 4;
+    int opponentQueen = isWhite ? 13 : 5;
+    int opponentKing = isWhite ? 14 : 6;
+
+    // Check for opponent's pawns attacking the king
+    int pawnDirection = isWhite ? -1 : 1;
+    int pawnAttacks[2] = { kingIndex + 7 * pawnDirection, kingIndex + 9 * pawnDirection };  // Diagonal attack squares
+    for (int attackIndex : pawnAttacks) {
+        if (attackIndex >= 0 && attackIndex < 64 && Square[attackIndex] == opponentPawn) {
+            return true;
+        }
+    }
+
+    // Check for opponent's knights attacking the king
+    int knightMoves[8] = { -17, -15, -10, -6, 6, 10, 15, 17 };
+    for (int move : knightMoves) {
+        int targetIndex = kingIndex + move;
+        if (targetIndex >= 0 && targetIndex < 64 && Square[targetIndex] == opponentKnight) {
+            return true;
+        }
+    }
+
+    // Check for opponent's bishops and queens (diagonal moves) attacking the king
+    int bishopDirections[4] = { -9, -7, 7, 9 };
+    for (int direction : bishopDirections) {
+        for (int i = 1; i < 8; i++) {
+            int targetIndex = kingIndex + i * direction;
+            if (targetIndex < 0 || targetIndex >= 64 || (targetIndex % 8 == 0 && direction == 9) || ((targetIndex + 1) % 8 == 0 && direction == 7)) {
+                break;  // Out of bounds or wrapping around the board
+            }
+            if (Square[targetIndex] != 0) {
+                if (Square[targetIndex] == opponentBishop || Square[targetIndex] == opponentQueen) {
+                    return true;
+                }
+                break;  // Blocked by another piece
+            }
+        }
+    }
+
+    // Check for opponent's rooks and queens (straight moves) attacking the king
+    int rookDirections[4] = { -8, -1, 1, 8 };
+    for (int direction : rookDirections) {
+        for (int i = 1; i < 8; i++) {
+            int targetIndex = kingIndex + i * direction;
+            if (targetIndex < 0 || targetIndex >= 64 || (targetIndex % 8 == 0 && direction == 1) || ((targetIndex + 1) % 8 == 0 && direction == -1)) {
+                break;  // Out of bounds or wrapping around the board
+            }
+            if (Square[targetIndex] != 0) {
+                if (Square[targetIndex] == opponentRook || Square[targetIndex] == opponentQueen) {
+                    return true;
+                }
+                break;  // Blocked by another piece
+            }
+        }
+    }
+
+    // Check for opponent's king attacking the king (1 square around the king)
+    int kingMoves[8] = { -9, -8, -7, -1, 1, 7, 8, 9 };
+    for (int move : kingMoves) {
+        int targetIndex = kingIndex + move;
+        if (targetIndex >= 0 && targetIndex < 64 && Square[targetIndex] == opponentKing) {
+            return true;
+        }
+    }
+
+    // No threats found, king is not in check
+    return false;
+}

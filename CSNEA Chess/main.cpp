@@ -6,6 +6,7 @@
 #include "Piece.h"
 #include "Board.h"
 
+
 int main()
 {
     // Create window instance
@@ -59,12 +60,12 @@ int main()
   
 
     // Initialise Piece Sprite Values
-    Core::SetupPawns(WhitePawns, t1, xOffset, squareSize, 6); 
-    Core::SetupPieces(WhiteKnights, t2, xOffset, squareSize, 7, 1, 6); // (PieceType, Texture, squareSize, Rank, Column1, Column2)
+    Core::SetupPawns(WhitePawns, t1, xOffset, squareSize, 6);
+    Core::SetupPieces(WhiteKnights, t2, xOffset, squareSize, 7, 1, 6);
     Core::SetupPieces(WhiteBishops, t3, xOffset, squareSize, 7, 2, 5);
     Core::SetupPieces(WhiteRooks, t4, xOffset, squareSize, 7, 0, 7);
-    Core::SetupPieces(WhiteQueens, t5, xOffset, squareSize, 7, 4);
-    Core::SetupPieces(WhiteKings, t6, xOffset, squareSize, 7, 3);
+    Core::SetupPieces(WhiteQueens, t5, xOffset, squareSize, 7, 3);
+    Core::SetupPieces(WhiteKings, t6, xOffset, squareSize, 7, 4);
 
     Core::SetupPawns(BlackPawns, t7, xOffset, squareSize, 1);
     Core::SetupPieces(BlackKnights, t8, xOffset, squareSize, 0, 1, 6);
@@ -209,11 +210,15 @@ int main()
                     bool valid = false;
                     bool isMoveValid = false; 
                     bool blocked = true;
+                    bool isCaptureWhite = false;
+                    bool isCaptureBlack = false;
 
+                    sf::Sprite LastPiece;
+                    
                     // Check Turn
                     if (isWhiteTurn) {
                         if (draggedPiece->getTexture() == &t1) { // If the dragged piece has the pawn texture (t1) treat as pawn
-                            valid = Piece::isPawnMoveValid(startRow, startCol, endRow, endCol, true); // Validate Pawn Move
+                            valid = Piece::isPawnMoveValid(startRow, startCol, endRow, endCol, true, Board.Square); // Validate Pawn Move
                             isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::White); // Check if square is Occupied by a Friendly Piece
                             isMoveValid = valid && isOccupied; // Check all conditions are valid
                         }
@@ -249,7 +254,7 @@ int main()
                     }
                     else {
                         if (draggedPiece->getTexture() == &t7) { // If the dragged piece has the black pawn texture (t8) treat as black pawn
-                            valid = Piece::isPawnMoveValid(startRow, startCol, endRow, endCol, false);
+                            valid = Piece::isPawnMoveValid(startRow, startCol, endRow, endCol, false, Board.Square);
                             isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::Black);
                             isMoveValid = valid && isOccupied;
                         }
@@ -285,10 +290,128 @@ int main()
                     }
 
                     if (isMoveValid && Piece::isPositionValid(endRow, endCol)) {
+
+                        isCaptureWhite = Piece::isOccupiedHostile(endRow, endCol, Piece::Black, Board.Square);
+                        isCaptureBlack = Piece::isOccupiedHostile(endRow, endCol, Piece::White, Board.Square); // Check if Capture is Available
+                        if (!isCaptureWhite) {
+                            if (Board.Square[Core::toIndex(endRow, endCol)] == (Piece::White | Piece::Pawn)) {
+                                LastPiece = Piece::returnAtPosition(endRow, endCol, WhitePawns, squareSize, xOffset); // Temporaily store captured piece
+                                Board.removeAtPosition(endRow, endCol, WhitePawns, squareSize, xOffset); // Remove captured piece
+                                std::cout << "REMOVE BLACK PAWN" << std::endl;
+                            }
+                            else if (Board.Square[Core::toIndex(endRow, endCol)] == (Piece::White | Piece::Knight)) {
+                                LastPiece = Piece::returnAtPosition(endRow, endCol, WhiteKnights, squareSize, xOffset);
+                                Board.removeAtPosition(endRow, endCol, WhiteKnights, squareSize, xOffset);
+                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                            }
+                            else if (Board.Square[Core::toIndex(endRow, endCol)] == (Piece::White | Piece::Bishop)) {
+                                LastPiece = Piece::returnAtPosition(endRow, endCol, WhiteBishops, squareSize, xOffset);
+                                Board.removeAtPosition(endRow, endCol, WhiteBishops, squareSize, xOffset);
+                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                            }
+                            else if (Board.Square[Core::toIndex(endRow, endCol)] == (Piece::White | Piece::Rook)) {
+                                LastPiece = Piece::returnAtPosition(endRow, endCol, WhiteRooks, squareSize, xOffset);
+                                Board.removeAtPosition(endRow, endCol, WhiteRooks, squareSize, xOffset);
+                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                            }
+                            else if (Board.Square[Core::toIndex(endRow, endCol)] == (Piece::White | Piece::Queen)) {
+                                LastPiece = Piece::returnAtPosition(endRow, endCol, WhiteQueens, squareSize, xOffset);
+                                Board.removeAtPosition(endRow, endCol, WhiteQueens, squareSize, xOffset);
+                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                            }
+                            else if (Board.Square[Core::toIndex(endRow, endCol)] == (Piece::White | Piece::King)) {
+                                LastPiece = Piece::returnAtPosition(endRow, endCol, WhiteKings, squareSize, xOffset);
+                                Board.removeAtPosition(endRow, endCol, WhiteKings, squareSize, xOffset);
+                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                            }
+                        }
+                        else if (!isCaptureBlack) {
+                            if (Board.Square[Core::toIndex(endRow, endCol)] == (Piece::Black | Piece::Pawn)) {
+                                LastPiece = Piece::returnAtPosition(endRow, endCol, BlackPawns, squareSize, xOffset);
+                                Board.removeAtPosition(endRow, endCol, BlackPawns, squareSize, xOffset);
+                                std::cout << "REMOVE BLACK PAWN" << std::endl;
+                            }
+                            else if (Board.Square[Core::toIndex(endRow, endCol)] == (Piece::Black | Piece::Knight)) {
+                                LastPiece = Piece::returnAtPosition(endRow, endCol, BlackKnights, squareSize, xOffset);
+                                Board.removeAtPosition(endRow, endCol, BlackKnights, squareSize, xOffset);
+                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                            }
+                            else if (Board.Square[Core::toIndex(endRow, endCol)] == (Piece::Black | Piece::Bishop)) {
+                                LastPiece = Piece::returnAtPosition(endRow, endCol, BlackBishops, squareSize, xOffset);
+                                Board.removeAtPosition(endRow, endCol, BlackBishops, squareSize, xOffset);
+                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                            }
+                            else if (Board.Square[Core::toIndex(endRow, endCol)] == (Piece::Black | Piece::Rook)) {
+                                LastPiece = Piece::returnAtPosition(endRow, endCol, BlackRooks, squareSize, xOffset);
+                                Board.removeAtPosition(endRow, endCol, BlackRooks, squareSize, xOffset);
+                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                            }
+                            else if (Board.Square[Core::toIndex(endRow, endCol)] == (Piece::Black | Piece::Queen)) {
+                                LastPiece = Piece::returnAtPosition(endRow, endCol, BlackQueens, squareSize, xOffset);
+                                Board.removeAtPosition(endRow, endCol, BlackQueens, squareSize, xOffset);
+                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                            }
+                            else if (Board.Square[Core::toIndex(endRow, endCol)] == (Piece::Black | Piece::King)) {
+                                LastPiece = Piece::returnAtPosition(endRow, endCol, BlackKings, squareSize, xOffset);
+                                Board.removeAtPosition(endRow, endCol, BlackKings, squareSize, xOffset);
+                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                            }
+                        }
                         sf::Vector2f snappedPosition = Core::getSnappedPosition(endRow, endCol, squareSize, xOffset); // Calculate the Nearest Row and Column
                         draggedPiece->setPosition(Core::getCenteredPosition(snappedPosition, *draggedPiece, squareSize)); // on the Grid Compared to the Mouse Position 
+                        int lastStartValue = Board.Square[Core::getIndex(originalPosition, squareSize, xOffset)]; // Temporarily Store the values of the start and target square
+                        int lastTargetValue = Board.Square[Core::getIndex(snappedPosition, squareSize, xOffset)];
                         Board.MakeMove(Move(Core::getIndex(originalPosition, squareSize, xOffset), Core::getIndex(snappedPosition, squareSize, xOffset)));
-                        isWhiteTurn = !isWhiteTurn; // Flip turn
+                        bool isWhiteKingCheck = Board.isKingInCheck(WhiteKings, true, squareSize, xOffset);
+                        bool isBlackKingCheck = Board.isKingInCheck(BlackKings, false, squareSize, xOffset);
+                        if (isWhiteKingCheck && isWhiteTurn) { // White is in Check so Previous Move Invalidated
+                            Board.Square[Core::getIndex(originalPosition, squareSize, xOffset)] = lastStartValue; // Unmake the Previous Move
+                            Board.Square[Core::getIndex(snappedPosition, squareSize, xOffset)] = lastTargetValue;
+                            std::cout << "WHITE IN CHECK" << std::endl;
+                            if (LastPiece.getTexture() == &t7) { // Determine What Piece Type Captured Piece is
+                                BlackPawns.push_back(LastPiece); // Add Back the Captured Piece
+                            }
+                            else if (LastPiece.getTexture() == &t8) {
+                                BlackKnights.push_back(LastPiece);
+                            }
+                            else if (LastPiece.getTexture() == &t9) {
+                                BlackBishops.push_back(LastPiece);
+                            }
+                            else if (LastPiece.getTexture() == &t10) {
+                                BlackRooks.push_back(LastPiece);
+                            }
+                            else if (LastPiece.getTexture() == &t11) {
+                                BlackQueens.push_back(LastPiece);
+                                std::cout << "PUSHBACK QUEEN" << std::endl;
+                            }
+                            draggedPiece->setPosition(originalPosition); // Return to original Position
+                        }
+                        else if (isBlackKingCheck && !isWhiteTurn) {
+                            Board.Square[Core::getIndex(originalPosition, squareSize, xOffset)] = lastStartValue; // Unmake the Previous Move
+                            Board.Square[Core::getIndex(snappedPosition, squareSize, xOffset)] = lastTargetValue;
+                            std::cout << "BLACK IN CHECK" << std::endl;
+                            if (LastPiece.getTexture() == &t1) {
+                                WhitePawns.push_back(LastPiece);
+                            }
+                            else if (LastPiece.getTexture() == &t2) {
+                                WhiteKnights.push_back(LastPiece);
+                            }
+                            else if (LastPiece.getTexture() == &t3) {
+                                WhiteBishops.push_back(LastPiece);
+                            }
+                            else if (LastPiece.getTexture() == &t4) {
+                                WhiteRooks.push_back(LastPiece);
+                            }
+                            else if (LastPiece.getTexture() == &t5) {
+                                WhiteQueens.push_back(LastPiece);
+                            }
+                            draggedPiece->setPosition(originalPosition);
+                        }
+                        else {
+                            std::cout << "NOT IN CHECK" << std::endl;
+                            isWhiteTurn = !isWhiteTurn; // Flip turn
+                        }
+
                         std::cout << std::endl;
                         Board.PrintBoard(); // Print Current Board Position
                     }

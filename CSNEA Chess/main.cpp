@@ -13,6 +13,21 @@ int main()
     sf::RenderWindow window(sf::VideoMode(1280, 800), "Chess");
     sf::Texture t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12;
 
+    sf::RectangleShape menuBar;
+    menuBar.setSize(sf::Vector2f(60.0f, 800.f));
+    menuBar.setPosition(0.f, 0.f);
+    menuBar.setFillColor(sf::Color(193, 255, 193));
+
+    sf::Texture t_ChessIconWhite , t_ChessIconBlack;
+    t_ChessIconWhite.loadFromFile("Assets/WhitePawn.png");
+    t_ChessIconBlack.loadFromFile("Assets/BlackPawn.png");
+    sf::Sprite ChessIcon;
+    ChessIcon.setTexture(t_ChessIconWhite);
+    ChessIcon.setPosition(0.f, 300.f);
+    ChessIcon.setScale(0.5f, 0.5f);
+    bool chessIconColour = true;
+
+
     // Import Textures For Pieces
     t1.loadFromFile("Assets/WhitePawn.png");
     t2.loadFromFile("Assets/WhiteKnight.png");
@@ -185,6 +200,16 @@ int main()
                             originalPosition = king.getPosition();
                             break;
                         }
+                    }
+
+                    if (ChessIcon.getGlobalBounds().contains(mousePos)) {
+                        if (chessIconColour) {
+                            ChessIcon.setTexture(t_ChessIconBlack);
+                        }
+                        else {
+                            ChessIcon.setTexture(t_ChessIconWhite);
+                        }
+                        chessIconColour = !chessIconColour;
                     }
 
                     if (draggedPiece) { // Check If Piece is Selected
@@ -503,7 +528,8 @@ int main()
             window.draw(BlackKings[0]);
         }
 
-
+        window.draw(menuBar);
+        window.draw(ChessIcon);
         window.display();
     }
 

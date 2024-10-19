@@ -25,10 +25,14 @@ namespace Core {
 		void PrintBoard();
 		void MakeMove(Move move);
 		void removeAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset);
+		void moveAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset, int targetRow, int TargetCol);
+		void addAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset);
 
 		bool isOccupiedFriendly(int row, int col, int Colour);
 		bool isBlocked(int startSquare, int endSquare);
 		bool isKingInCheck(std::vector<sf::Sprite> King, bool isWhite, int squareSize, int xOffset);
+		
+		sf::Sprite& getAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset);
 	};
 
 }

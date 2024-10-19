@@ -55,26 +55,27 @@ bool Piece::isKnightMoveValid(int startRow, int startCol, int endRow, int endCol
 
 bool Piece::isPawnMoveValid(int startRow, int startCol, int endRow, int endCol, bool isWhite, int Square[64]) {
     if (startRow == endRow && startCol == endCol) {
-        return false;
+        return false; // Pieces cannot move onto their start square
     }
     int direction = isWhite ? -1 : 1; // White pawns move up (negative direction), black pawns move down (positive direction)
     bool isStartRow = (isWhite && startRow == 6) || (!isWhite && startRow == 1); // Check if the pawn is on its initial row
     int colour = (isWhite) ? 0 : 8; // Ternary operator assigns 0 for white and 8 for black
+    int offset = Helpers::toIndex(endRow, endCol) - Helpers::toIndex(startRow, startCol); // Calculate offset between start square and target square
+    bool isCapture = Piece::isOccupiedHostile(endRow, endCol, colour, Square); // Check if square has an enemy piece
 
 
     // Simple forward move (1 square)
-    if (endCol == startCol && endRow == startRow + direction) {
+    if (endCol == startCol && endRow == startRow + direction && isCapture) {
         return true;
     }
 
     // Double move forward from starting position (2 squares)
-    if (isStartRow && endCol == startCol && endRow == startRow + 2 * direction) {
+    if (isStartRow && endCol == startCol && endRow == startRow + 2 * direction && isCapture) {
         return true;
     }
 
-    int index = Core::toIndex(endRow, endCol) - Core::toIndex(startRow, startCol); // Calculate offset between start square and target square
-    bool isCapture = Piece::isOccupiedHostile(endRow, endCol, colour, Square); // Check if square has an enemy piece
-    if (index == (direction * -7) || index == (direction * -9)) { // If the offsets match pawn offsets
+    
+    if (offset == (direction * -7) || offset == (direction * -9)) { // If the offsets match pawn offsets
         if (!isCapture) { 
             return true; // allow capture
         }
@@ -84,10 +85,10 @@ bool Piece::isPawnMoveValid(int startRow, int startCol, int endRow, int endCol, 
 }
 
 // Return the Sprite at a Grid Position
-sf::Sprite Piece::returnAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset) {
-    int targetIndex = Core::toIndex(endRow, endCol); // Calculate index
+sf::Sprite& Piece::returnAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset) {
+    int targetIndex = Helpers::toIndex(endRow, endCol); // Calculate index
     for (int i = 0; i < Pieces.size(); i++) { // Iterate for size of the vector
-        int index = Core::getIndex(Pieces[i].getPosition(), squareSize, xOffset);
+        int index = Helpers::getIndex(Pieces[i].getPosition(), squareSize, xOffset);
         if (index == targetIndex) { // If Target index = Sprite Index
             return Pieces[i]; // Return the Sprite
         }
@@ -109,4 +110,25 @@ bool Piece::isOccupiedHostile(int row, int col, int Colour, int Square[64]) {
         return false;
     }
     return true;
+}
+
+// Validate Castling Move
+bool Piece::isCastlingValid(int startRow, int startCol, int endRow, int endCol, bool isWhite, int Square[64]) {
+    if (startRow != endRow) { return false; }
+    int colour = (isWhite) ? 0 : 8;
+    int kingIndex = Helpers::toIndex(startRow, startCol);
+    if ((Square[kingIndex] - colour) != 6) { return false; }
+    int rookIndex;
+
+}
+
+bool Piece::isPromotion(int startRow, int startCol, int endRow, int endCol, bool isWhite, int Square[64]) {
+    int targetIndex = Helpers::toIndex(endRow, endCol);
+    std::cout << "END ROW" << endRow  << std::endl;
+    int promotionRow = (isWhite) ? 0 : 7;
+    std::cout << "PROMOTION ROW" << promotionRow << std::endl;
+    if (endRow  == (promotionRow)) {
+        return true;
+    }
+    return false;
 }

@@ -20,6 +20,7 @@ namespace Piece {
     const int White = 0;
     const int Black = 8;
 
+    // Move Validation Functions
     bool isPositionValid(int row, int col);
     bool isRookMoveValid(int startRow, int startCol, int endRow, int endCol);
     bool isBishopMoveValid(int startRow, int startCol, int endRow, int endCol );
@@ -27,8 +28,13 @@ namespace Piece {
     bool isKingMoveValid(int startRow, int startCol, int endRow, int endCol);
     bool isKnightMoveValid(int startRow, int startCol, int endRow, int endCol);
     bool isPawnMoveValid(int startRow, int startCol, int endRow, int endCol, bool isWhite, int Square[64]);
+    bool isCastlingValid(int startRow, int startCol, int endRow, int endCol, bool isWhite, int Square[64]);
 
+    bool isPromotion(int startRow, int startCol, int endRow, int endCol, bool isWhite, int Square[64]);
+
+    // Check if Square is Hostile
     bool isOccupiedHostile(int row, int col, int Colour, int Square[64]);
 
-    sf::Sprite returnAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset);
+    // Return Reference to Sprite
+    sf::Sprite& returnAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset);
 }

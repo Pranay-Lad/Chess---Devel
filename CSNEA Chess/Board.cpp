@@ -34,8 +34,8 @@ void Core::Board::InitialiseBoard() {
     Square[56] = Piece::Rook | Piece::Black;
     Square[57] = Piece::Knight | Piece::Black;
     Square[58] = Piece::Bishop | Piece::Black;
-    Square[59] = Piece::King | Piece::Black;
-    Square[60] = Piece::Queen | Piece::Black;
+    Square[59] = Piece::Queen | Piece::Black;
+    Square[60] = Piece::King | Piece::Black;
     Square[61] = Piece::Bishop | Piece::Black;
     Square[62] = Piece::Knight | Piece::Black;
     Square[63] = Piece::Rook | Piece::Black;
@@ -110,9 +110,9 @@ bool Core::Board::isBlocked(int startSquare, int endSquare) {
 
 // Remove Sprite At Grid Position
 void Core::Board::removeAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset) {
-    int targetindex = Core::toIndex(endRow, endCol); // Calculate Index of Target Square
+    int targetindex = Helpers::toIndex(endRow, endCol); // Calculate Index of Target Square
     for (int i = 0; i < Pieces.size(); i++) { // Iterate for the size of the Piece vector
-        int index = Core::getIndex(Pieces[i].getPosition(), squareSize, xOffset); // Calculate index of sprite
+        int index = Helpers::getIndex(Pieces[i].getPosition(), squareSize, xOffset); // Calculate index of sprite
         if (index == targetindex) { // If Position are the same
             Pieces.erase(Pieces.begin() + i); // Remove Sprite from vector
         }
@@ -120,8 +120,33 @@ void Core::Board::removeAtPosition(int endRow, int endCol, std::vector<sf::Sprit
     }
 }
 
+sf::Sprite& Core::Board::getAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset) {
+    int targetindex = Helpers::toIndex(endRow, endCol); // Calculate Index of Target Square
+    for (int i = 0; i < Pieces.size(); i++) { // Iterate for the size of the Piece vector
+        int index = Helpers::getIndex(Pieces[i].getPosition(), squareSize, xOffset); // Calculate index of sprite
+        if (index == targetindex) { // If Position are the same
+            return Pieces[i]; // Remove Sprite from vector
+        }
+    }
+}
+
+void Core::Board::moveAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset, int targetRow, int targetCol) {  
+    int index = (endRow * 8) + endCol;
+    if (Square[index] == (Piece::Black | Piece::Pawn)) {
+        endRow = 7 - endRow;
+        targetRow = 7 - targetRow;
+        sf::Sprite& piece = Core::Board::getAtPosition(endRow, endCol, Pieces, squareSize, xOffset);
+        sf::Vector2f pos = Helpers::getSnappedPosition(piece.getPosition(), squareSize, xOffset);
+        std::cout << "X: " << pos.x << "Y: " << pos.y << std::endl;
+        sf::Vector2f snappedPosition = Helpers::getSnappedPosition(targetRow, targetCol, squareSize, xOffset);
+        piece.setPosition(Helpers::getCenteredPosition(snappedPosition, piece, squareSize));
+        Core::Board::MakeMove(Move(Helpers::toIndex(endRow, endCol), Helpers::toIndex(targetRow, targetCol)));
+    }
+    
+}
+
 bool Core::Board::isKingInCheck(std::vector<sf::Sprite> King, bool isWhite, int squareSize, int xOffset) {
-    int kingIndex = Core::getIndex(King[0].getPosition(), squareSize, xOffset);
+    int kingIndex = Helpers::getIndex(King[0].getPosition(), squareSize, xOffset);
     std::cout << "KING INDEX" << kingIndex << std::endl;
     // Piece values for the opponent based on the color of the king
     int opponentPawn = isWhite ? 9 : 1;
@@ -132,7 +157,7 @@ bool Core::Board::isKingInCheck(std::vector<sf::Sprite> King, bool isWhite, int 
     int opponentKing = isWhite ? 14 : 6;
 
     // Check for opponent's pawns attacking the king
-    int pawnDirection = isWhite ? -1 : 1;
+    int pawnDirection = isWhite ? 1 : -1;
     int pawnAttacks[2] = { kingIndex + 7 * pawnDirection, kingIndex + 9 * pawnDirection };  // Diagonal attack squares
     for (int attackIndex : pawnAttacks) {
         if (attackIndex >= 0 && attackIndex < 64 && Square[attackIndex] == opponentPawn) {
@@ -194,4 +219,12 @@ bool Core::Board::isKingInCheck(std::vector<sf::Sprite> King, bool isWhite, int 
 
     // No threats found, king is not in check
     return false;
+}
+
+void Core::Board::addAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset) {
+    // Add A Sprite To Vector At Specified Position and Scale
+    sf::Sprite Piece;
+    Piece.scale(0.7f, 0.7f);
+    Piece.setPosition(Helpers::getCenteredPosition(Helpers::getSnappedPosition(endRow, endCol, squareSize, xOffset), Piece, squareSize));
+    Pieces.push_back(Piece);
 }

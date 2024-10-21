@@ -336,48 +336,53 @@ void mainloop()
                         std::cout << "X: " << y << "Y: " << x << std::endl;
                         Board.moveAtPosition(6, 1, BlackPawns, squareSize, xOffset, y, x);
                         Board.PrintBoard();*/
-                        if (Board.isCheckmate(1)) {
-                            std::cout << "White is in checkmate." << std::endl;
-                        }
-                        else if (Board.isInCheck(1)) {
-                            std::cout << "White is in check." << std::endl;
-                        }
-                        else {
-                            std::cout << "White is safe." << std::endl;
-                        }
-
-                        // Example: Check for black's checkmate
-                        if (Board.isCheckmate(0)) {
-                            std::cout << "Black is in checkmate." << std::endl;
-                        }
-                        else if (Board.isInCheck(0)) {
-                            std::cout << "Black is in check." << std::endl;
-                        }
-                        else {
-                            std::cout << "Black is safe." << std::endl;
-                        }
+                        
                     }
 
                     if (PromotionButton.getGlobalBounds().contains(mousePos)) {
                         //std::cout << "PROMOTION COl: " << promotionCol << "PROMOTION ROW" << promotionRow << std::endl;
                         //bool checkmate = isCheckmate(Board.Square, true);
                         //std::cout << "Is black in checkmate? " << (checkmate ? "Yes" : "No") << std::endl;
+                        Board.removeAtPosition(promotionRow, promotionCol, WhitePawns, squareSize, xOffset);
                     }
 
                     if (isPromotion) {
-                        std::cout << "PROMOTION COl: " << promotionCol << "PROMOTION ROW" << promotionRow << std::endl;
-                        std::cout << "PROMOTION INDEX" << Helpers::toIndex(promotionRow, promotionCol) << std::endl;
+                        !isWhiteTurn ? std::cout << "WHITE TURN" << std::endl : std::cout << "BLACK TURN" << std::endl;
+                        int promotionColour = isWhiteTurn ? 8 : 0;
                         if (PromotionPieces[0].getGlobalBounds().contains(mousePos)) { 
-                            std::cout << "QUEEN PROMOTION" << std::endl; 
+                            std::cout << "QUEEN PROMOTION" << std::endl;
+                            sf::Sprite temp = PromotionPieces[0];
+                            temp.setPosition(Helpers::getCenteredPosition(Helpers::getSnappedPosition(promotionRow, promotionCol, squareSize, xOffset), temp, squareSize));
+                            isWhiteTurn ? BlackQueens.push_back(temp) : WhiteQueens.push_back(temp);
+                            Board.Square[Helpers::toIndex(promotionRow, promotionCol)] = promotionColour + 5;
                             isPromotion = !isPromotion;
 
                         }
-                        if (PromotionPieces[1].getGlobalBounds().contains(mousePos)) { std::cout << "ROOK PROMOTION" << std::endl; isPromotion = !isPromotion;
+                        if (PromotionPieces[1].getGlobalBounds().contains(mousePos)) { 
+                            std::cout << "ROOK PROMOTION" << std::endl; 
+                            sf::Sprite temp = PromotionPieces[1];
+                            temp.setPosition(Helpers::getCenteredPosition(Helpers::getSnappedPosition(promotionRow, promotionCol, squareSize, xOffset), temp, squareSize));
+                            isWhiteTurn ? BlackRooks.push_back(temp) : WhiteRooks.push_back(temp);
+                            Board.Square[Helpers::toIndex(promotionRow, promotionCol)] = promotionColour + 4;
+                            isPromotion = !isPromotion;
                         }
-                        if (PromotionPieces[2].getGlobalBounds().contains(mousePos)) { std::cout << "BISHOP PROMOTION" << std::endl; isPromotion = !isPromotion;
+                        if (PromotionPieces[2].getGlobalBounds().contains(mousePos)) { 
+                            std::cout << "BISHOP PROMOTION" << std::endl; 
+                            sf::Sprite temp = PromotionPieces[2];
+                            temp.setPosition(Helpers::getCenteredPosition(Helpers::getSnappedPosition(promotionRow, promotionCol, squareSize, xOffset), temp, squareSize));
+                            isWhiteTurn ? BlackBishops.push_back(temp) : WhiteBishops.push_back(temp);
+                            Board.Square[Helpers::toIndex(promotionRow, promotionCol)] = promotionColour + 3;
+                            isPromotion = !isPromotion;
                         }
-                        if (PromotionPieces[3].getGlobalBounds().contains(mousePos)) { std::cout << "KNIGHT PROMOTION" << std::endl; isPromotion = !isPromotion;
+                        if (PromotionPieces[3].getGlobalBounds().contains(mousePos)) { 
+                            std::cout << "KNIGHT PROMOTION" << std::endl; 
+                            sf::Sprite temp = PromotionPieces[3];
+                            temp.setPosition(Helpers::getCenteredPosition(Helpers::getSnappedPosition(promotionRow, promotionCol, squareSize, xOffset), temp, squareSize));
+                            isWhiteTurn ? BlackKnights.push_back(temp) : WhiteKnights.push_back(temp);
+                            Board.Square[Helpers::toIndex(promotionRow, promotionCol)] = promotionColour + 1;
+                            isPromotion = !isPromotion;
                         }
+                        Board.PrintBoard();
                     }
 
 
@@ -620,6 +625,7 @@ void mainloop()
                                     ShowPromotion(5, endCol, isWhiteTurn, PromotionPieces, Textures, squareSize, xOffset);
                                     promotionRow = endRow;
                                     promotionCol = endCol;
+                                    Board.removeAtPosition(promotionRow, promotionCol, WhitePawns, squareSize, xOffset);
                                     
                                 }
                                 else  {
@@ -627,6 +633,7 @@ void mainloop()
                                     ShowPromotion(3, endCol, isWhiteTurn, PromotionPieces, Textures, squareSize, xOffset);
                                     promotionRow = endRow;
                                     promotionCol = endCol;
+                                    Board.removeAtPosition(promotionRow, promotionCol, BlackPawns, squareSize, xOffset);
                                 }
                                 
                                 
@@ -698,8 +705,8 @@ void mainloop()
         for (auto& rook : WhiteRooks) {
             window.draw(rook);
         }
-        if (WhiteQueens.size()) {
-            window.draw(WhiteQueens[0]);
+        for (auto& queen : WhiteQueens) {
+            window.draw(queen);
         }
 
         if (WhiteKings.size()) {
@@ -722,8 +729,8 @@ void mainloop()
             window.draw(rook);
         }
 
-        if (BlackQueens.size()) {
-            window.draw(BlackQueens[0]);
+        for (auto& queen : BlackQueens) {
+            window.draw(queen);
         }
 
         if (BlackKings.size()) {

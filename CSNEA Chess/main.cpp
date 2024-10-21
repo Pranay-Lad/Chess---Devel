@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <cstdlib> 
+#include <algorithm>
 
 #include "Helpers.h"
 #include "Piece.h"
@@ -32,7 +33,13 @@ void ShowPromotion(int row, int col, bool isWhite, std::vector<sf::Sprite>& Prom
 }
 
 
-int main()
+
+
+
+
+
+
+void mainloop()
 {
     // Create window instance
     sf::RenderWindow window(sf::VideoMode(1280, 800), "Chess");
@@ -47,8 +54,6 @@ int main()
     menuBar.setSize(sf::Vector2f(60.0f, 800.f));
     menuBar.setPosition(0.f, 0.f);
     menuBar.setFillColor(sf::Color(193, 255, 193));
-
-
 
 
     sf::RectangleShape EvaluateButton;
@@ -91,10 +96,6 @@ int main()
     bool evaluationMode = false;
 
 
-    // Timer
-
-    sf::Clock clock;
-    sf::Time elapsed1 = clock.getElapsedTime();
    
 
     
@@ -168,6 +169,8 @@ int main()
     Evaluate Eval;
     Board.InitialiseBoard();
     Board.PrintBoard();
+    int promotionCol = 0;
+    int promotionRow = 0;
   
 
     // Initialise Piece Sprite Values
@@ -324,6 +327,7 @@ int main()
                     }
 
                     if (TestingButton.getGlobalBounds().contains(mousePos)) {
+                        /*
                         srand(time(0));
                         std::string piecetype;
                         //std::cin >> piecetype;
@@ -331,16 +335,42 @@ int main()
                         int y = rand() % 8;
                         std::cout << "X: " << y << "Y: " << x << std::endl;
                         Board.moveAtPosition(6, 1, BlackPawns, squareSize, xOffset, y, x);
-                        Board.PrintBoard();
+                        Board.PrintBoard();*/
+                        if (Board.isCheckmate(1)) {
+                            std::cout << "White is in checkmate." << std::endl;
+                        }
+                        else if (Board.isInCheck(1)) {
+                            std::cout << "White is in check." << std::endl;
+                        }
+                        else {
+                            std::cout << "White is safe." << std::endl;
+                        }
+
+                        // Example: Check for black's checkmate
+                        if (Board.isCheckmate(0)) {
+                            std::cout << "Black is in checkmate." << std::endl;
+                        }
+                        else if (Board.isInCheck(0)) {
+                            std::cout << "Black is in check." << std::endl;
+                        }
+                        else {
+                            std::cout << "Black is safe." << std::endl;
+                        }
                     }
 
                     if (PromotionButton.getGlobalBounds().contains(mousePos)) {
-                        isPromotion = !isPromotion;
-                        ShowPromotion(3, 5, false, PromotionPieces, Textures, squareSize, xOffset);
+                        //std::cout << "PROMOTION COl: " << promotionCol << "PROMOTION ROW" << promotionRow << std::endl;
+                        //bool checkmate = isCheckmate(Board.Square, true);
+                        //std::cout << "Is black in checkmate? " << (checkmate ? "Yes" : "No") << std::endl;
                     }
 
                     if (isPromotion) {
-                        if (PromotionPieces[0].getGlobalBounds().contains(mousePos)) { std::cout << "QUEEN PROMOTION" << std::endl; isPromotion = !isPromotion;
+                        std::cout << "PROMOTION COl: " << promotionCol << "PROMOTION ROW" << promotionRow << std::endl;
+                        std::cout << "PROMOTION INDEX" << Helpers::toIndex(promotionRow, promotionCol) << std::endl;
+                        if (PromotionPieces[0].getGlobalBounds().contains(mousePos)) { 
+                            std::cout << "QUEEN PROMOTION" << std::endl; 
+                            isPromotion = !isPromotion;
+
                         }
                         if (PromotionPieces[1].getGlobalBounds().contains(mousePos)) { std::cout << "ROOK PROMOTION" << std::endl; isPromotion = !isPromotion;
                         }
@@ -584,14 +614,22 @@ int main()
                             if (isPromotionAllowed) {
                                 std::cout << "PAWN CAN PROMOTE" << std::endl;
                                 isPromotion = true;
+                                
                                 if (isWhiteTurn) {
                                     Promotion.setPosition(xOffset + (endCol) * squareSize, 0 * squareSize);
                                     ShowPromotion(5, endCol, isWhiteTurn, PromotionPieces, Textures, squareSize, xOffset);
+                                    promotionRow = endRow;
+                                    promotionCol = endCol;
+                                    
                                 }
-                                else {
+                                else  {
                                     Promotion.setPosition(xOffset + (endCol) * squareSize, 4 * squareSize);
                                     ShowPromotion(3, endCol, isWhiteTurn, PromotionPieces, Textures, squareSize, xOffset);
+                                    promotionRow = endRow;
+                                    promotionCol = endCol;
                                 }
+                                
+                                
                                 
                             }
                             else {
@@ -714,5 +752,10 @@ int main()
         window.display();
     }
 
+    
+}
+
+int main() {
+    mainloop();
     return 0;
 }

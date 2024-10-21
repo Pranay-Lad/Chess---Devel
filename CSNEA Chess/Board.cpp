@@ -228,3 +228,11 @@ void Core::Board::addAtPosition(int endRow, int endCol, std::vector<sf::Sprite>&
     Piece.setPosition(Helpers::getCenteredPosition(Helpers::getSnappedPosition(endRow, endCol, squareSize, xOffset), Piece, squareSize));
     Pieces.push_back(Piece);
 }
+
+void Core::Board::PromotionMove(int endRow, int endCol, std::vector<sf::Sprite>& Pawns, std::vector<sf::Sprite> PromotionPiece, int flag, int squareSize, int xOffset, std::vector<sf::Texture>& Textures) {
+    sf::Sprite temp = getAtPosition(endRow, endCol, Pawns, squareSize, xOffset);
+    removeAtPosition(endRow, endCol, Pawns, squareSize, xOffset);
+    temp.setTexture(Textures[flag]);
+    PromotionPiece.push_back(temp);
+}
+

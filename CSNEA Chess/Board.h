@@ -27,6 +27,7 @@ namespace Core {
 		void removeAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset);
 		void moveAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset, int targetRow, int TargetCol);
 		void addAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset);
+		void PromotionMove(int endRow, int endCol, std::vector<sf::Sprite>& Pawns, std::vector<sf::Sprite> PromotionPiece, int flag, int squareSize, int xOffset, std::vector<sf::Texture>& Textures);
 
 		bool isOccupiedFriendly(int row, int col, int Colour);
 		bool isBlocked(int startSquare, int endSquare);

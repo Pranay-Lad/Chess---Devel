@@ -236,3 +236,6 @@ void Core::Board::PromotionMove(int endRow, int endCol, std::vector<sf::Sprite>&
     PromotionPiece.push_back(temp);
 }
 
+void Core::Board::makeCastleMove(int endRow, int endCol, int startRow, int startCol, std::vector<sf::Sprite>& Rooks, int colour) {
+
+}

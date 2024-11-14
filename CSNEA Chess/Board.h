@@ -28,10 +28,12 @@ namespace Core {
 		void moveAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset, int targetRow, int TargetCol);
 		void addAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset);
 		void PromotionMove(int endRow, int endCol, std::vector<sf::Sprite>& Pawns, std::vector<sf::Sprite> PromotionPiece, int flag, int squareSize, int xOffset, std::vector<sf::Texture>& Textures);
+		void makeCastleMove(int endRow, int endCol, int startRow, int startCol, std::vector<sf::Sprite>& Rooks, int colour);
 
 		bool isOccupiedFriendly(int row, int col, int Colour);
 		bool isBlocked(int startSquare, int endSquare);
 		bool isKingInCheck(std::vector<sf::Sprite> King, bool isWhite, int squareSize, int xOffset);
+		
 		
 		sf::Sprite& getAtPosition(int endRow, int endCol, std::vector<sf::Sprite>& Pieces, int squareSize, int xOffset);
 	};

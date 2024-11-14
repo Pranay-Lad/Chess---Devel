@@ -25,7 +25,7 @@ namespace Piece {
     bool isRookMoveValid(int startRow, int startCol, int endRow, int endCol);
     bool isBishopMoveValid(int startRow, int startCol, int endRow, int endCol );
     bool isQueenMoveValid(int startRow, int startCol, int endRow, int endCol);
-    bool isKingMoveValid(int startRow, int startCol, int endRow, int endCol);
+    bool isKingMoveValid(int startRow, int startCol, int endRow, int endCol, bool hasCastled, int Square[64], bool isWhite);
     bool isKnightMoveValid(int startRow, int startCol, int endRow, int endCol);
     bool isPawnMoveValid(int startRow, int startCol, int endRow, int endCol, bool isWhite, int Square[64]);
     bool isCastlingValid(int startRow, int startCol, int endRow, int endCol, bool isWhite, int Square[64]);

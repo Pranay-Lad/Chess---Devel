@@ -9,11 +9,14 @@
 #include "Board.h"
 #include "Evaluate.h"
 
+
+
+// Set up Promotion Textures and Position
 void ShowPromotion(int row, int col, bool isWhite, std::vector<sf::Sprite>& PromotionPieces, std::vector<sf::Texture>& Textures, int squareSize, int xOffset) {
     if (isWhite) {
-        PromotionPieces[0].setTexture(Textures[4]);
+        PromotionPieces[0].setTexture(Textures[4]); // Set White Queen ; Snap To Grid Position
         PromotionPieces[0].setPosition(Helpers::getCenteredPosition(Helpers::getSnappedPosition(0, col, squareSize, xOffset), PromotionPieces[0], squareSize));
-        PromotionPieces[1].setTexture(Textures[3]);
+        PromotionPieces[1].setTexture(Textures[3]); // Snap to Row Below
         PromotionPieces[1].setPosition(Helpers::getCenteredPosition(Helpers::getSnappedPosition(1, col, squareSize, xOffset), PromotionPieces[1], squareSize));
         PromotionPieces[2].setTexture(Textures[2]);
         PromotionPieces[2].setPosition(Helpers::getCenteredPosition(Helpers::getSnappedPosition(2, col, squareSize, xOffset), PromotionPieces[2], squareSize));
@@ -21,9 +24,9 @@ void ShowPromotion(int row, int col, bool isWhite, std::vector<sf::Sprite>& Prom
         PromotionPieces[3].setPosition(Helpers::getCenteredPosition(Helpers::getSnappedPosition(3, col, squareSize, xOffset), PromotionPieces[3], squareSize));
     }
     else {
-        PromotionPieces[0].setTexture(Textures[10]);
+        PromotionPieces[0].setTexture(Textures[10]); // Set Black Queen
         PromotionPieces[0].setPosition(Helpers::getCenteredPosition(Helpers::getSnappedPosition(4, col, squareSize, xOffset), PromotionPieces[0], squareSize));
-        PromotionPieces[1].setTexture(Textures[9]);
+        PromotionPieces[1].setTexture(Textures[9]); // Snap To Row Above
         PromotionPieces[1].setPosition(Helpers::getCenteredPosition(Helpers::getSnappedPosition(5, col, squareSize, xOffset), PromotionPieces[1], squareSize));
         PromotionPieces[2].setTexture(Textures[8]);
         PromotionPieces[2].setPosition(Helpers::getCenteredPosition(Helpers::getSnappedPosition(6, col, squareSize, xOffset), PromotionPieces[2], squareSize));
@@ -32,45 +35,89 @@ void ShowPromotion(int row, int col, bool isWhite, std::vector<sf::Sprite>& Prom
     }
 }
 
-
-
-
-
-
-
+// Convert Integer Seconds to String to Display
+std::string int_to_Time(int time) {
+    // Format - xx:xx
+    // Ensure 4 digit time by adding 0 where necessary
+    std::string minutes = ((time / 60) > 9) ? std::to_string(time / 60) : "0" + std::to_string(time / 60);
+    std::string seconds = ((time % 60) > 9) ? std::to_string(time % 60) : "0" + std::to_string(time % 60);
+    std::string conv_Time = (minutes) + ":" + (seconds);
+    //std::cout << conv_Time << std::endl;
+    return conv_Time;
+}
 
 void mainloop()
 {
     // Create window instance
     sf::RenderWindow window(sf::VideoMode(1280, 800), "Chess");
     std::vector<sf::Texture> Textures(12); // Create Array of Textures
-    //sf::Texture t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12;
+    
 
+    int x = 120;
+
+    // *Timer*
+    
+    int WhiteTimeRemaining = 3600; // 10 Minute Values
+    int BlackTimeRemaining = 3600;
+    // Fonts
+    sf::Font f_roboto;
+    f_roboto.loadFromFile("C:\\Users\\ladpr\\Fonts\\RobotoMono-Bold.ttf");
+    sf::Text whiteTime;
+    sf::Text blackTime;
+    blackTime.setFont(f_roboto);
+    blackTime.setString(int_to_Time(BlackTimeRemaining));
+    // Setup Values
+    blackTime.setFillColor(sf::Color::White);
+    blackTime.setPosition(sf::Vector2f(250.0f, 336.0f));
+    whiteTime.setFont(f_roboto);
+    whiteTime.setString(int_to_Time(BlackTimeRemaining));
+    whiteTime.setFillColor(sf::Color::Black);
+    whiteTime.setPosition(sf::Vector2f(250.0f, 436.0f));
+
+    sf::Clock clock; // Initialise Clock
+
+
+    // Timer Box
+    sf::RectangleShape WhiteTimeBox;
+    sf::RectangleShape BlackTimeBox;
+    BlackTimeBox.setFillColor(sf::Color::Black); // Setup Values
+    WhiteTimeBox.setFillColor(sf::Color::White);
+    BlackTimeBox.setSize(sf::Vector2f(190.0f, 100.0f));
+    BlackTimeBox.setPosition(sf::Vector2f(200.0f, 300.0f));
+    WhiteTimeBox.setSize(sf::Vector2f(190.0f, 100.0f));
+    WhiteTimeBox.setPosition(sf::Vector2f(200.0f, 400.0f));
+
+    // Set Icon
     sf::Image icon;
     icon.loadFromFile("Assets/ChessIcon.png");
     window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
+
+    // Menu Bar
     sf::RectangleShape menuBar;
     menuBar.setSize(sf::Vector2f(60.0f, 800.f));
     menuBar.setPosition(0.f, 0.f);
     menuBar.setFillColor(sf::Color(193, 255, 193));
 
-
+    // Evaluation Button
     sf::RectangleShape EvaluateButton;
     EvaluateButton.setSize(sf::Vector2f(60.0f, 60));
     EvaluateButton.setPosition(100.f, 100.f);
     EvaluateButton.setFillColor(sf::Color(193, 255, 193));
 
+    // Testing Button
     sf::RectangleShape TestingButton;
     TestingButton.setSize(sf::Vector2f(60.0f, 60));
     TestingButton.setPosition(100.f, 300.0f);
     TestingButton.setFillColor(sf::Color(229, 116, 116));
 
+    // Promotion Button
     sf::RectangleShape PromotionButton;
     PromotionButton.setSize(sf::Vector2f(60.0f, 60));
     PromotionButton.setPosition(100.f, 500);
     PromotionButton.setFillColor(sf::Color(229, 116, 116));
 
+    // Play MenuBar Button
     sf::Texture t_ChessIconWhite , t_ChessIconBlack;
     t_ChessIconWhite.loadFromFile("Assets/WhitePawn.png");
     t_ChessIconBlack.loadFromFile("Assets/BlackPawn.png");
@@ -79,7 +126,22 @@ void mainloop()
     ChessIcon.setPosition(0.f, 300.f);
     ChessIcon.setScale(0.5f, 0.5f);
     bool chessIconColour = true;
+    bool playGameMode = false;
 
+    // Play Game Button
+    sf::RectangleShape playGame;
+    playGame.setFillColor(sf::Color(229, 116, 116));
+    playGame.setPosition(sf::Vector2f(200.0f, 160.0f));
+    playGame.setSize(sf::Vector2f(190.0f, 100.0f));
+    sf::Text playGameText;
+    playGameText.setFont(f_roboto);
+    playGameText.setFillColor(sf::Color::Black);
+    playGameText.setPosition(sf::Vector2f(220.0f, 200.0f));
+    playGameText.setScale(sf::Vector2f(0.8f, 0.8f));
+    playGameText.setString("START GAME");
+
+
+    // Home MenuBar Button
     sf::Texture t_HomeEnabled, t_HomeDisabled;
     t_HomeEnabled.loadFromFile("Assets/HomeIcon.png");
     sf::Sprite HomeIcon;
@@ -87,6 +149,7 @@ void mainloop()
     HomeIcon.setPosition(4.5f, 230.f);
     HomeIcon.setScale(0.10f, 0.10f);
 
+    // Analysis MenuBar Button  
     sf::Texture t_AnalysisEnabled, t_AnalysisDisabled;
     t_AnalysisEnabled.loadFromFile("Assets/AnalysisIcon.png");
     sf::Sprite AnalysisIcon;
@@ -96,9 +159,17 @@ void mainloop()
     bool evaluationMode = false;
 
 
-   
+    // Evaluation Bar
+    sf::RectangleShape WhiteBar;
+    sf::RectangleShape BlackBar;
+    // Setup POsition and Size Values
+    WhiteBar.setSize(sf::Vector2f(40.0f, 800.0f));
+    WhiteBar.setPosition(sf::Vector2f(450.0f, 0.0f));
+    WhiteBar.setFillColor(sf::Color::White);
+    BlackBar.setSize(sf::Vector2f(40.0f, 400.0f));
+    BlackBar.setPosition(sf::Vector2f(450.0f, 0.0f));
+    BlackBar.setFillColor(sf::Color::Black);
 
-    
 
     // Import Textures For Pieces
     Textures[0].loadFromFile("Assets/WhitePawn.png");
@@ -165,13 +236,16 @@ void mainloop()
     bool isWhiteTurn = true;
     bool isPromotion = false;
 
+    // Initialse Board Values
     Core::Board Board;
     Evaluate Eval;
     Board.InitialiseBoard();
     Board.PrintBoard();
     int promotionCol = 0;
     int promotionRow = 0;
-  
+    int currentTime = 0;
+    int elapsedTime = 0;
+    bool gameStart = false;
 
     // Initialise Piece Sprite Values
     Helpers::SetupPawns(WhitePawns, Textures[0], xOffset, squareSize, 6);
@@ -305,12 +379,14 @@ void mainloop()
                         std::cout << "PLAY BUTTON PRESSED" << std::endl;
                         ChessIcon.setTexture(t_ChessIconBlack);
                         evaluationMode = false;
+                        playGameMode = true;
 
                     }
 
                     if (HomeIcon.getGlobalBounds().contains(mousePos)) {
                         ChessIcon.setTexture(t_ChessIconWhite);
                         evaluationMode = false;
+                        playGameMode = false;
                         std::cout << "HOME BUTTON PRESSED" << std::endl;
                     }
 
@@ -318,6 +394,7 @@ void mainloop()
                         ChessIcon.setTexture(t_ChessIconWhite);
                         std::cout << "ANALYSIS BUTTON PRESSED" << std::endl;
                         evaluationMode = true;
+                        playGameMode = false;
                     }
 
                     if (EvaluateButton.getGlobalBounds().contains(mousePos)) {
@@ -340,22 +417,28 @@ void mainloop()
                     }
 
                     if (PromotionButton.getGlobalBounds().contains(mousePos)) {
-                        //std::cout << "PROMOTION COl: " << promotionCol << "PROMOTION ROW" << promotionRow << std::endl;
-                        //bool checkmate = isCheckmate(Board.Square, true);
-                        //std::cout << "Is black in checkmate? " << (checkmate ? "Yes" : "No") << std::endl;
-                        Board.removeAtPosition(promotionRow, promotionCol, WhitePawns, squareSize, xOffset);
+                        Eval.convertToEvaluate(Board.Square);
+                        Eval.evaluationBar(BlackBar);
                     }
 
+
+                    if (playGame.getGlobalBounds().contains(mousePos)) {
+                        std::cout << "START GAME " << std::endl;
+                        clock.restart();
+                        gameStart = true;
+                    }
+                    // Check If In Promotion Mode
                     if (isPromotion) {
                         !isWhiteTurn ? std::cout << "WHITE TURN" << std::endl : std::cout << "BLACK TURN" << std::endl;
-                        int promotionColour = isWhiteTurn ? 8 : 0;
+                        int promotionColour = isWhiteTurn ? 8 : 0; // Set Colour Offset
                         if (PromotionPieces[0].getGlobalBounds().contains(mousePos)) { 
                             std::cout << "QUEEN PROMOTION" << std::endl;
-                            sf::Sprite temp = PromotionPieces[0];
+                            sf::Sprite temp = PromotionPieces[0]; // Set New Piece To A Promotion Piece -> Size and Texture Setup
                             temp.setPosition(Helpers::getCenteredPosition(Helpers::getSnappedPosition(promotionRow, promotionCol, squareSize, xOffset), temp, squareSize));
-                            isWhiteTurn ? BlackQueens.push_back(temp) : WhiteQueens.push_back(temp);
-                            Board.Square[Helpers::toIndex(promotionRow, promotionCol)] = promotionColour + 5;
-                            isPromotion = !isPromotion;
+                            // Set Position of Promoted Piece
+                            isWhiteTurn ? BlackQueens.push_back(temp) : WhiteQueens.push_back(temp); // Add Piece To Relevant Vector
+                            Board.Square[Helpers::toIndex(promotionRow, promotionCol)] = promotionColour + 5; // Update Internal Board
+                            isPromotion = !isPromotion; // Toggle Promotion Mode
 
                         }
                         if (PromotionPieces[1].getGlobalBounds().contains(mousePos)) { 
@@ -383,6 +466,8 @@ void mainloop()
                             isPromotion = !isPromotion;
                         }
                         Board.PrintBoard();
+                        Eval.convertToEvaluate(Board.Square); // Evaluate Board
+                        Eval.evaluationBar(BlackBar); // Update Bar
                     }
 
 
@@ -423,7 +508,7 @@ void mainloop()
                             valid = Piece::isPawnMoveValid(startRow, startCol, endRow, endCol, true, Board.Square); // Validate Pawn Move
                             isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::White); // Check if square is Occupied by a Friendly Piece
                             isMoveValid = valid && isOccupied; // Check all conditions are valid
-                            isPromotionAllowed = Piece::isPromotion(startRow, startCol, endRow, endCol, true, Board.Square);
+                            isPromotionAllowed = Piece::isPromotion(startRow, startCol, endRow, endCol, true, Board.Square); // Check If Promotion
                         }
                         else if (draggedPiece->getTexture() == &Textures[1]) {
                             valid = Piece::isKnightMoveValid(startRow, startCol, endRow, endCol);
@@ -450,7 +535,7 @@ void mainloop()
                             isMoveValid = valid && isOccupied && !blocked;
                         }
                         else if (draggedPiece->getTexture() == &Textures[5]) {
-                            valid = Piece::isKingMoveValid(startRow, startCol, endRow, endCol);
+                            valid = Piece::isKingMoveValid(startRow, startCol, endRow, endCol, false, Board.Square, true);
                             isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::White);
                             isMoveValid = valid && isOccupied;
                         }
@@ -487,7 +572,7 @@ void mainloop()
                             isMoveValid = valid && isOccupied && !blocked;
                         }
                         else if (draggedPiece->getTexture() == &Textures[11]) {
-                            valid = Piece::isKingMoveValid(startRow, startCol, endRow, endCol);
+                            valid = Piece::isKingMoveValid(startRow, startCol, endRow, endCol, false, Board.Square, false);
                             isOccupied = Board.isOccupiedFriendly(endRow, endCol, Piece::Black);
                             isMoveValid = valid && isOccupied;
                         }
@@ -501,44 +586,44 @@ void mainloop()
                             if (Board.Square[Helpers::toIndex(endRow, endCol)] == (Piece::White | Piece::Pawn)) {
                                 LastPiece = Piece::returnAtPosition(endRow, endCol, WhitePawns, squareSize, xOffset); // Temporaily store captured piece
                                 Board.removeAtPosition(endRow, endCol, WhitePawns, squareSize, xOffset); // Remove captured piece
-                                std::cout << "REMOVE BLACK PAWN" << std::endl;
+                                std::cout << "REMOVE White PAWN" << std::endl;
                             }
                             else if (Board.Square[Helpers::toIndex(endRow, endCol)] == (Piece::White | Piece::Knight)) {
                                 LastPiece = Piece::returnAtPosition(endRow, endCol, WhiteKnights, squareSize, xOffset);
                                 Board.removeAtPosition(endRow, endCol, WhiteKnights, squareSize, xOffset);
-                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                                std::cout << "REMOVE White Knight" << std::endl;
                             }
                             else if (Board.Square[Helpers::toIndex(endRow, endCol)] == (Piece::White | Piece::Bishop)) {
                                 LastPiece = Piece::returnAtPosition(endRow, endCol, WhiteBishops, squareSize, xOffset);
                                 Board.removeAtPosition(endRow, endCol, WhiteBishops, squareSize, xOffset);
-                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                                std::cout << "REMOVE White Bishop" << std::endl;
                             }
                             else if (Board.Square[Helpers::toIndex(endRow, endCol)] == (Piece::White | Piece::Rook)) {
                                 LastPiece = Piece::returnAtPosition(endRow, endCol, WhiteRooks, squareSize, xOffset);
                                 Board.removeAtPosition(endRow, endCol, WhiteRooks, squareSize, xOffset);
-                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                                std::cout << "REMOVE White Rook" << std::endl;
                             }
                             else if (Board.Square[Helpers::toIndex(endRow, endCol)] == (Piece::White | Piece::Queen)) {
                                 LastPiece = Piece::returnAtPosition(endRow, endCol, WhiteQueens, squareSize, xOffset);
                                 Board.removeAtPosition(endRow, endCol, WhiteQueens, squareSize, xOffset);
-                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                                std::cout << "REMOVE White Queen" << std::endl;
                             }
                             else if (Board.Square[Helpers::toIndex(endRow, endCol)] == (Piece::White | Piece::King)) {
                                 LastPiece = Piece::returnAtPosition(endRow, endCol, WhiteKings, squareSize, xOffset);
                                 Board.removeAtPosition(endRow, endCol, WhiteKings, squareSize, xOffset);
-                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                                std::cout << "REMOVE White King" << std::endl;
                             }
                         }
                         else if (!isCaptureBlack) {
                             if (Board.Square[Helpers::toIndex(endRow, endCol)] == (Piece::Black | Piece::Pawn)) {
                                 LastPiece = Piece::returnAtPosition(endRow, endCol, BlackPawns, squareSize, xOffset);
                                 Board.removeAtPosition(endRow, endCol, BlackPawns, squareSize, xOffset);
-                                std::cout << "REMOVE BLACK PAWN" << std::endl;
+                                std::cout << "REMOVE Black PAWN" << std::endl;
                             }
                             else if (Board.Square[Helpers::toIndex(endRow, endCol)] == (Piece::Black | Piece::Knight)) {
                                 LastPiece = Piece::returnAtPosition(endRow, endCol, BlackKnights, squareSize, xOffset);
                                 Board.removeAtPosition(endRow, endCol, BlackKnights, squareSize, xOffset);
-                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                                std::cout << "REMOVE BLACK Knight" << std::endl;
                             }
                             else if (Board.Square[Helpers::toIndex(endRow, endCol)] == (Piece::Black | Piece::Bishop)) {
                                 LastPiece = Piece::returnAtPosition(endRow, endCol, BlackBishops, squareSize, xOffset);
@@ -548,17 +633,17 @@ void mainloop()
                             else if (Board.Square[Helpers::toIndex(endRow, endCol)] == (Piece::Black | Piece::Rook)) {
                                 LastPiece = Piece::returnAtPosition(endRow, endCol, BlackRooks, squareSize, xOffset);
                                 Board.removeAtPosition(endRow, endCol, BlackRooks, squareSize, xOffset);
-                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                                std::cout << "REMOVE BLACK Rook" << std::endl;
                             }
                             else if (Board.Square[Helpers::toIndex(endRow, endCol)] == (Piece::Black | Piece::Queen)) {
                                 LastPiece = Piece::returnAtPosition(endRow, endCol, BlackQueens, squareSize, xOffset);
                                 Board.removeAtPosition(endRow, endCol, BlackQueens, squareSize, xOffset);
-                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                                std::cout << "REMOVE BLACK Queen" << std::endl;
                             }
                             else if (Board.Square[Helpers::toIndex(endRow, endCol)] == (Piece::Black | Piece::King)) {
                                 LastPiece = Piece::returnAtPosition(endRow, endCol, BlackKings, squareSize, xOffset);
                                 Board.removeAtPosition(endRow, endCol, BlackKings, squareSize, xOffset);
-                                std::cout << "REMOVE BLACK BISHOP" << std::endl;
+                                std::cout << "REMOVE BLACK King" << std::endl;
                             }
                             
                         }
@@ -616,28 +701,27 @@ void mainloop()
 
                             // If Piece Played in Pawn on Promotion Square, Call Promotion Function
 
+                            // Branch if Promotion Allowed
                             if (isPromotionAllowed) {
                                 std::cout << "PAWN CAN PROMOTE" << std::endl;
-                                isPromotion = true;
+                                isPromotion = true; // Toggle Promotion Menu
                                 
+                                // Branch For White or Black Promotion
                                 if (isWhiteTurn) {
-                                    Promotion.setPosition(xOffset + (endCol) * squareSize, 0 * squareSize);
-                                    ShowPromotion(5, endCol, isWhiteTurn, PromotionPieces, Textures, squareSize, xOffset);
-                                    promotionRow = endRow;
+                                    Promotion.setPosition(xOffset + (endCol) * squareSize, 0 * squareSize); // Set Position of Promotion Menu
+                                    ShowPromotion(5, endCol, isWhiteTurn, PromotionPieces, Textures, squareSize, xOffset); // Set Texture To Correct Colour
+                                    promotionRow = endRow; // Allow Position Access Outside Of Scope
                                     promotionCol = endCol;
-                                    Board.removeAtPosition(promotionRow, promotionCol, WhitePawns, squareSize, xOffset);
+                                    Board.removeAtPosition(promotionRow, promotionCol, WhitePawns, squareSize, xOffset); // Remove Pawn Sprite
                                     
                                 }
-                                else  {
-                                    Promotion.setPosition(xOffset + (endCol) * squareSize, 4 * squareSize);
+                                else {
+                                    Promotion.setPosition(xOffset + (endCol)*squareSize, 4 * squareSize);
                                     ShowPromotion(3, endCol, isWhiteTurn, PromotionPieces, Textures, squareSize, xOffset);
                                     promotionRow = endRow;
                                     promotionCol = endCol;
                                     Board.removeAtPosition(promotionRow, promotionCol, BlackPawns, squareSize, xOffset);
                                 }
-                                
-                                
-                                
                             }
                             else {
                                 std::cout << "PAWN CANNOT PROMOTE" << std::endl;
@@ -648,6 +732,11 @@ void mainloop()
 
                         std::cout << std::endl;
                         Board.PrintBoard(); // Print Current Board Position
+                        Eval.convertToEvaluate(Board.Square); // Evaluate Board
+                        Eval.evaluationBar(BlackBar); // Update Evaluation Bar
+                        clock.restart();
+                        currentTime = 0;
+
                     }
                     else {
                         draggedPiece->setPosition(originalPosition); // Snap back to original position
@@ -656,14 +745,49 @@ void mainloop()
                 }
             }
 
+
             if (event.type == sf::Event::MouseMoved) {
                 if (draggedPiece) {
                     // Move the piece with the mouse
                     draggedPiece->setPosition(sf::Vector2f(event.mouseMove.x, event.mouseMove.y) + offset);
                 }
             }
+
+            if (event.type == sf::Event::KeyPressed) {
+                if (event.key.scancode == sf::Keyboard::Scan::Escape) {
+                    std::cout << "ESCAPE PRESSED " << std::endl;
+                    window.close();
+                }
+
+                if (event.key.scancode == sf::Keyboard::Scan::E) {
+                    sf::Time elapsedTime = clock.getElapsedTime();
+                    std::cout << "ELAPSED TIME: " << static_cast<int>(elapsedTime.asSeconds()) << std::endl;
+                }
+
+                if (event.key.scancode == sf::Keyboard::Scan::R) {
+                    clock.restart();
+                    std::cout << "CLOCK RESTARTED " << std::endl;
+                }
+
+            }
+            
+            
         }
 
+        int elapsedTime = static_cast<int>(clock.getElapsedTime().asSeconds()); // Cast to Truncate to Int
+
+        // Update Timer
+        if ((elapsedTime > currentTime) && gameStart) { // If Elapsed Time Has Increased
+            currentTime += 1; // Increment time
+            if (isWhiteTurn) {
+                WhiteTimeRemaining -= 1; // Decreasse Correct Time
+            }
+            else {
+                BlackTimeRemaining -= 1;
+            }
+            // Update Text
+            (isWhiteTurn) ? whiteTime.setString(int_to_Time(WhiteTimeRemaining)) : blackTime.setString(int_to_Time(BlackTimeRemaining));
+        }
         // Set Window Background
         window.clear(sf::Color(35,42,45));
 
@@ -741,6 +865,9 @@ void mainloop()
         window.draw(ChessIcon);
         window.draw(HomeIcon);
         window.draw(AnalysisIcon);
+        window.draw(playGame);
+
+        
 
         if (isPromotion) {
             window.draw(Promotion);
@@ -754,12 +881,20 @@ void mainloop()
             window.draw(EvaluateButton);
             window.draw(TestingButton);
             window.draw(PromotionButton);
+            window.draw(WhiteBar);
+            window.draw(BlackBar);
         }
         
+        if (playGameMode) {
+            window.draw(WhiteTimeBox);
+            window.draw(BlackTimeBox);
+            window.draw(whiteTime);
+            window.draw(blackTime);
+        }
+        
+        window.draw(playGameText);
         window.display();
     }
-
-    
 }
 
 int main() {

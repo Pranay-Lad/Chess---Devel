@@ -33,12 +33,30 @@ bool Piece::isQueenMoveValid(int startRow, int startCol, int endRow, int endCol)
         Piece::isBishopMoveValid(startRow, startCol, endRow, endCol);
 }
 
-bool Piece::isKingMoveValid(int startRow, int startCol, int endRow, int endCol) {
+bool Piece::isKingMoveValid(int startRow, int startCol, int endRow, int endCol, bool hasCastled, int Square[64], bool isWhite) {
     if (startRow == endRow && startCol == endCol) {
         return false; // Piece cannot move onto its start square
     }
     int rowDiff = abs(startRow - endRow); // Calculate the difference between 
     int colDiff = abs(startCol - endCol); // rows and columns
+
+    int row = (isWhite) ? 7 : 0;
+    int startIndex = Helpers::toIndex(startRow, startCol);
+    int endIndex = Helpers::toIndex(endRow, endCol);
+    int offset = (startIndex > endIndex) ? -1 : 1;
+    // Add Castling Rules
+    if (!hasCastled && endRow == row) {
+        if ((startIndex + (2* offset) == endIndex)) {
+            if (Square[startIndex + offset] == 0 && Square[startIndex + (offset * 2)] == 0) {
+                if (offset == -1 && Square[startIndex + (offset * 3)] == 0 || offset == 1) {
+                    return true;
+                }
+                
+            }
+            
+        }
+    }
+
 
     return rowDiff <= 1 && colDiff <= 1;  // King moves one square in any direction
 }
@@ -122,13 +140,14 @@ bool Piece::isCastlingValid(int startRow, int startCol, int endRow, int endCol, 
 
 }
 
+// Check if Promotion Possible
 bool Piece::isPromotion(int startRow, int startCol, int endRow, int endCol, bool isWhite, int Square[64]) {
-    int targetIndex = Helpers::toIndex(endRow, endCol);
+    int targetIndex = Helpers::toIndex(endRow, endCol); // Calculate Target Index
     std::cout << "END ROW" << endRow  << std::endl;
-    int promotionRow = (isWhite) ? 0 : 7;
+    int promotionRow = (isWhite) ? 0 : 7; // Set the final rank for white and black
     std::cout << "PROMOTION ROW" << promotionRow << std::endl;
-    if (endRow  == (promotionRow)) {
-        return true;
+    if (endRow  == (promotionRow)) { // If Final Rank Reached
+        return true; 
     }
     return false;
 }

@@ -35,6 +35,206 @@ void ShowPromotion(int row, int col, bool isWhite, std::vector<sf::Sprite>& Prom
     }
 }
 
+std::vector<std::pair<int, int>> GenerateLegalMoves(int board[64], int color) {
+    std::vector<std::pair<int, int>> legalMoves;
+
+    // Direction vectors for sliding pieces (rook, bishop, queen)
+    const int rookDirections[4] = { -8, 8, -1, 1 }; // Up, down, left, right
+    const int bishopDirections[4] = { -9, -7, 7, 9 }; // Diagonals
+    const int knightOffsets[8] = { -17, -15, -10, -6, 6, 10, 15, 17 }; // Knight moves
+    const int kingOffsets[8] = { -9, -8, -7, -1, 1, 7, 8, 9 }; // King moves
+
+    int pawnDirection = (color == 1) ? -8 : 8; // Forward movement direction for pawns
+    int opponentColorStart = (color == 1) ? 9 : 1;
+    int opponentColorEnd = (color == 1) ? 14 : 6;
+
+    for (int i = 0; i < 64; i++) {
+        int piece = board[i];
+        if (piece == 0 || (color == 1 && piece > 6) || (color == 2 && piece < 9)) {
+            continue; // Skip empty squares and opponent pieces
+        }
+
+        if (piece == 1 || piece == 9) { // Pawn
+            int forward = i + pawnDirection;
+            if (forward >= 0 && forward < 64 && board[forward] == 0) {
+                legalMoves.emplace_back(i, forward);
+                if ((color == 1 && i / 8 == 6) || (color == 2 && i / 8 == 1)) { // Double move
+                    int doubleForward = forward + pawnDirection;
+                    if (board[doubleForward] == 0) {
+                        legalMoves.emplace_back(i, doubleForward);
+                    }
+                }
+            }
+
+            // Diagonal captures
+            int captureLeft = forward - 1;
+            int captureRight = forward + 1;
+            if (captureLeft >= 0 && captureLeft < 64 && i % 8 != 0 &&
+                board[captureLeft] >= opponentColorStart && board[captureLeft] <= opponentColorEnd) {
+                legalMoves.emplace_back(i, captureLeft);
+            }
+            if (captureRight >= 0 && captureRight < 64 && i % 8 != 7 &&
+                board[captureRight] >= opponentColorStart && board[captureRight] <= opponentColorEnd) {
+                legalMoves.emplace_back(i, captureRight);
+            }
+        }
+        else if (piece == 2 || piece == 10) { // Knight
+            for (int offset : knightOffsets) {
+                int target = i + offset;
+                if (target >= 0 && target < 64 && (abs((i % 8) - (target % 8)) <= 2)) {
+                    if (board[target] == 0 || (board[target] >= opponentColorStart && board[target] <= opponentColorEnd)) {
+                        legalMoves.emplace_back(i, target);
+                    }
+                }
+            }
+        }
+        else if (piece == 3 || piece == 11 || piece == 5 || piece == 13) { // Bishop or Queen
+            const int* directions = bishopDirections;
+            int numDirections = 4;
+            if (piece == 5 || piece == 13) { // Queen also moves like a rook
+                numDirections = 8;
+            }
+            for (int d = 0; d < numDirections; d++) {
+                int current = i;
+                while (true) {
+                    current += directions[d];
+                    if (current < 0 || current >= 64 || abs((current % 8) - (i % 8)) > 1) break;
+                    if (board[current] == 0) {
+                        legalMoves.emplace_back(i, current);
+                    }
+                    else if (board[current] >= opponentColorStart && board[current] <= opponentColorEnd) {
+                        legalMoves.emplace_back(i, current);
+                        break;
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+        }
+        else if (piece == 4 || piece == 12) { // Rook
+            for (int d = 0; d < 4; d++) {
+                int current = i;
+                while (true) {
+                    current += rookDirections[d];
+                    if (current < 0 || current >= 64 || abs((current % 8) - (i % 8)) > 1) break;
+                    if (board[current] == 0) {
+                        legalMoves.emplace_back(i, current);
+                    }
+                    else if (board[current] >= opponentColorStart && board[current] <= opponentColorEnd) {
+                        legalMoves.emplace_back(i, current);
+                        break;
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+        }
+        else if (piece == 6 || piece == 14) { // King
+            for (int offset : kingOffsets) {
+                int target = i + offset;
+                if (target >= 0 && target < 64 && abs((i % 8) - (target % 8)) <= 1) {
+                    if (board[target] == 0 || (board[target] >= opponentColorStart && board[target] <= opponentColorEnd)) {
+                        legalMoves.emplace_back(i, target);
+                    }
+                }
+            }
+        }
+    }
+
+    return legalMoves;
+}
+
+using namespace std;
+string IndexToNotation(int index) {
+    char file = 'A' + (index % 8);  // Column letter
+    char rank = '8' - (index / 8); // Row number
+    return string(1, file) + rank;
+}
+
+// Returns the piece name
+string PieceName(int piece) {
+    switch (piece) {
+    case 1: case 9: return "Pawn";
+    case 2: case 10: return "Knight";
+    case 3: case 11: return "Bishop";
+    case 4: case 12: return "Rook";
+    case 5: case 13: return "Queen";
+    case 6: case 14: return "King";
+    default: return "Unknown";
+    }
+}
+
+const int EMPTY = 0;
+const int WHITE_KING = 6;
+const int BLACK_KING = 14;
+
+void MakeMove(int board[64], int from, int to, int& capturedPiece) {
+    capturedPiece = board[to];
+    board[to] = board[from];
+    board[from] = EMPTY;
+}
+
+// Reverts a simulated move
+void UndoMove(int board[64], int from, int to, int capturedPiece) {
+    board[from] = board[to];
+    board[to] = capturedPiece;
+}
+
+// Function For Checkmate
+bool isCheckmate(Core::Board board, int colour, std::vector<sf::Sprite>& king, int squareSize, int xOffset) {
+    int kingPosition = -1;
+    bool isWhiteColour;
+    // Set Colour Boolean Variable
+    if (colour == 1) {
+        isWhiteColour = true;
+    }
+    else {
+        isWhiteColour = false;
+    }
+    for (int i = 0; i < 64; i++) { // Find King Position
+        if ((colour == 1 && board.Square[i] == WHITE_KING) || (colour == 2 && board.Square[i] == BLACK_KING)) {
+            kingPosition = i;
+            break;
+        }
+    }
+    
+    
+    // Check if the king is in check
+    if (!board.isKingInCheck(king, isWhiteColour, squareSize, xOffset)) {
+        cout << "The king is not in check.\n";
+        return false;
+    }
+
+    // Generate all legal moves
+    vector<pair<int, int>> legalMoves = GenerateLegalMoves(board.Square, colour);
+
+    // If no legal moves exist, it's checkmate
+    if (legalMoves.empty()) {
+        cout << "No legal moves available. It's checkmate.\n";
+        return true;
+    }
+
+    // Output all legal moves
+    int capturedPiece;
+    cout << "Available moves for color " << (colour == 1 ? "White" : "Black") << ":\n";
+    for (const auto& move : legalMoves) {
+        MakeMove(board.Square, move.first, move.second, capturedPiece);
+
+        // Check if the king is still in check
+        if (!board.isKingInCheck(king, isWhiteColour, squareSize, xOffset)) {
+            cout << PieceName(board.Square[move.first]) << " from " << IndexToNotation(move.first)
+                << " to " << IndexToNotation(move.second) << "\n";
+        }
+
+        UndoMove(board.Square, move.first, move.second, capturedPiece);
+    }
+
+    return false;
+
+}
+
 // Convert Integer Seconds to String to Display
 std::string int_to_Time(int time) {
     // Format - xx:xx
@@ -404,15 +604,12 @@ void mainloop()
                     }
 
                     if (TestingButton.getGlobalBounds().contains(mousePos)) {
-                        /*
-                        srand(time(0));
-                        std::string piecetype;
-                        //std::cin >> piecetype;
-                        int x = rand() % 8;
-                        int y = rand() % 8;
-                        std::cout << "X: " << y << "Y: " << x << std::endl;
-                        Board.moveAtPosition(6, 1, BlackPawns, squareSize, xOffset, y, x);
-                        Board.PrintBoard();*/
+                        if (isCheckmate(Board, 2, BlackKings, squareSize, xOffset)) {
+                            std::cout << "CHECKMATE" << std::endl;
+                        }
+                        else {
+                            std::cout << "NOT CHECKMATE" << std::endl;
+                        }
                         
                     }
 
@@ -767,6 +964,10 @@ void mainloop()
                 if (event.key.scancode == sf::Keyboard::Scan::R) {
                     clock.restart();
                     std::cout << "CLOCK RESTARTED " << std::endl;
+                }
+
+                if (event.key.scancode == sf::Keyboard::Scan::D) {
+                    std::cout << "CHECKMATE" << std::endl;
                 }
 
             }

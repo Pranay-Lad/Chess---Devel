@@ -71,6 +71,7 @@ bool Piece::isKnightMoveValid(int startRow, int startCol, int endRow, int endCol
     return (rowDiff == 2 && colDiff == 1) || (rowDiff == 1 && colDiff == 2);  // "L" shape movement
 }
 
+// Pawn Validation Function
 bool Piece::isPawnMoveValid(int startRow, int startCol, int endRow, int endCol, bool isWhite, int Square[64]) {
     if (startRow == endRow && startCol == endCol) {
         return false; // Pieces cannot move onto their start square

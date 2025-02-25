@@ -3,13 +3,18 @@
 #include <string>
 #include <cstdlib> 
 #include <algorithm>
+#include <sstream>
+#include <msclr/marshal_cppstd.h>
+
 
 #include "Helpers.h"
 #include "Piece.h"
 #include "Board.h"
 #include "Evaluate.h"
 
-
+using namespace System;
+using namespace System::Data;
+using namespace System::Data::SqlClient;
 
 // Set up Promotion Textures and Position
 void ShowPromotion(int row, int col, bool isWhite, std::vector<sf::Sprite>& PromotionPieces, std::vector<sf::Texture>& Textures, int squareSize, int xOffset) {
@@ -35,6 +40,7 @@ void ShowPromotion(int row, int col, bool isWhite, std::vector<sf::Sprite>& Prom
     }
 }
 
+// Move Generation
 std::vector<std::pair<int, int>> GenerateLegalMoves(int board[64], int color) {
     std::vector<std::pair<int, int>> legalMoves;
 
@@ -246,12 +252,165 @@ std::string int_to_Time(int time) {
     return conv_Time;
 }
 
+// Structure to hold player data
+struct Player {
+    std::string name;
+    int wins;
+    int losses;
+    int draws;
+};
+
+// Database
+std::vector<Player> FetchPlayerData() {
+    std::vector<Player> players;
+
+    String^ connectionString =
+        "Data Source=(LocalDB)\\MSSQLLocalDB;"
+        "AttachDbFilename=C:\\USERS\\LADPR\\DOCUMENTS\\CHESSDATABASE.mdf;"
+        "Integrated Security=True;";
+
+    try {
+        SqlConnection^ connection = gcnew SqlConnection(connectionString);
+        connection->Open();
+
+        String^ sqlQuery = "SELECT PlayerName, Wins, Losses, Draws FROM Players";
+        SqlCommand^ command = gcnew SqlCommand(sqlQuery, connection);
+        SqlDataReader^ reader = command->ExecuteReader();
+
+        while (reader->Read()) {
+            Player p;
+            p.name = msclr::interop::marshal_as<std::string>(reader["PlayerName"]->ToString());
+            p.wins = reader->GetInt32(1);
+            p.losses = reader->GetInt32(2);
+            p.draws = reader->GetInt32(3);
+
+            players.push_back(p);
+        }
+
+        connection->Close();
+    }
+    catch (SqlException^ ex) {
+        Console::WriteLine("SQL Error: {0}", ex->Message);
+    }
+
+    return players;
+}
+
+// Function to create SFML window and display data
+void ShowDatabaseWindow() {
+    std::vector<Player> players = FetchPlayerData();
+
+    sf::RenderWindow window(sf::VideoMode(600, 400), "Chess Database");
+
+    sf::Font font;
+    font.loadFromFile("C:\\Users\\ladpr\\Fonts\\RobotoMono-Bold.ttf");
+
+
+    std::vector<sf::Text> textList;
+    float yOffset = 50;
+
+    for (const auto& player : players) {
+        std::ostringstream oss;
+        oss << "Name: " << player.name << " | Wins: " << player.wins
+            << " | Losses: " << player.losses << " | Draws: " << player.draws;
+
+        sf::Text text;
+        text.setFont(font);
+        text.setString(oss.str());
+        text.setCharacterSize(12);
+        text.setFillColor(sf::Color::White);
+        text.setPosition(20, yOffset);
+
+        textList.push_back(text);
+        yOffset += 30; // Move down for the next player
+    }
+
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed)
+                window.close();
+        }
+
+        window.clear(sf::Color::Black);
+
+        for (const auto& text : textList) {
+            window.draw(text);
+        }
+
+        window.display();
+    }
+}
+
+
+
+// Function for opening the login window
+void openLoginWindow() {
+    sf::RenderWindow loginWindow(sf::VideoMode(340, 50), "Login Window", sf::Style::None); // Create window
+    loginWindow.setPosition(sf::Vector2i(750, 500)); // change position
+    // Load font
+    sf::Font font;
+    font.loadFromFile("C:\\Users\\ladpr\\Fonts\\RobotoMono-Bold.ttf");
+
+    // Input box (rectangle)
+    sf::RectangleShape inputBox(sf::Vector2f(340, 50));
+    //inputBox.setPosition(200, 250);
+    inputBox.setPosition(0, 0);
+    inputBox.setFillColor(sf::Color::Black);
+
+    // Text inside input box
+    sf::Text inputText;
+    inputText.setFont(font);
+    inputText.setCharacterSize(24);
+    inputText.setFillColor(sf::Color::White);
+    inputText.setPosition(10, 10); // Inside the box
+
+    std::string userInput;
+
+    while (loginWindow.isOpen()) {
+        sf::Event event;
+        while (loginWindow.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                loginWindow.close();
+            }
+
+            if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::Enter) {
+                    std::cout << userInput << std::endl;
+                    loginWindow.close();
+                }
+            }
+
+            // Handle text input
+            if (event.type == sf::Event::TextEntered) {
+                if (event.text.unicode < 128) { // Only allow ASCII characters
+                    if (event.text.unicode == '\b' && !userInput.empty()) { // Handle backspace
+                        userInput.pop_back();
+                    }
+                    else if (event.text.unicode >= 32 && event.text.unicode <= 126) { // Printable characters
+                        userInput += static_cast<char>(event.text.unicode);
+                    }
+                    inputText.setString(userInput);
+                }
+            }
+        }
+
+        loginWindow.clear(sf::Color::Blue);
+        loginWindow.draw(inputBox);
+        loginWindow.draw(inputText);
+        loginWindow.display();
+    }
+}
 void mainloop()
 {
+    bool is_login = true;
     // Create window instance
     sf::RenderWindow window(sf::VideoMode(1280, 800), "Chess");
+    
     std::vector<sf::Texture> Textures(12); // Create Array of Textures
     
+    
+
 
     int x = 120;
 
@@ -461,7 +620,43 @@ void mainloop()
     Helpers::SetupPieces(BlackRooks, Textures[9], xOffset, squareSize, 0, 0, 7);
     Helpers::SetupPieces(BlackQueens, Textures[10], xOffset, squareSize, 0, 3);
     Helpers::SetupPieces(BlackKings, Textures[11], xOffset, squareSize, 0, 4);
+
+
+    //DataBase
+
+    String^ connectionString =
+        "Data Source=(LocalDB)\\MSSQLLocalDB;"
+        "AttachDbFilename=C:\\USERS\\LADPR\\DOCUMENTS\\CHESSDATABASE.mdf;"
+        "Integrated Security=True;";
     
+    try
+    {
+        // Create the connection
+        SqlConnection^ connection = gcnew SqlConnection(connectionString);
+        connection->Open();
+        Console::WriteLine("Connection to database succeeded!");
+        /*
+        String^ sqlQuery = "INSERT INTO Players (PlayerName, Wins, Losses, Draws) VALUES (@name, @wins, @losses, @draws)";
+        SqlCommand^ command = gcnew SqlCommand(sqlQuery, connection);
+        command->Parameters->AddWithValue("@name", "Philip");
+        command->Parameters->AddWithValue("@wins", 8);
+        command->Parameters->AddWithValue("@losses", 20);
+        command->Parameters->AddWithValue("@draws", 4);
+
+        int rowsAffected = command->ExecuteNonQuery();
+        Console::WriteLine("Rows Inserted: {0}", rowsAffected);
+        */
+        connection->Close();
+
+    }
+    catch (SqlException^ ex)
+    {
+        Console::WriteLine("SQL Error: {0}", ex->Message);
+    }
+    catch (Exception^ ex)
+    {
+        Console::WriteLine("Error: {0}", ex->Message);
+    }
 
     // Run as long as window is open
     while (window.isOpen())
@@ -604,12 +799,7 @@ void mainloop()
                     }
 
                     if (TestingButton.getGlobalBounds().contains(mousePos)) {
-                        if (isCheckmate(Board, 2, BlackKings, squareSize, xOffset)) {
-                            std::cout << "CHECKMATE" << std::endl;
-                        }
-                        else {
-                            std::cout << "NOT CHECKMATE" << std::endl;
-                        }
+                        ShowDatabaseWindow();
                         
                     }
 
@@ -1066,7 +1256,7 @@ void mainloop()
         window.draw(ChessIcon);
         window.draw(HomeIcon);
         window.draw(AnalysisIcon);
-        window.draw(playGame);
+        //window.draw(playGame);
 
         
 
@@ -1092,8 +1282,9 @@ void mainloop()
             window.draw(whiteTime);
             window.draw(blackTime);
         }
+     
         
-        window.draw(playGameText);
+        //window.draw(playGameText);
         window.display();
     }
 }
